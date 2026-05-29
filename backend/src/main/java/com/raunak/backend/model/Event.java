@@ -1,10 +1,6 @@
 package com.raunak.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +11,7 @@ import lombok.Setter;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private int id;
 
     private String problemId;
@@ -24,4 +21,8 @@ public class Event {
     private long timestamp;
     private int timeSpent;
     private boolean contestMode;
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 }
