@@ -8,4 +8,5 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event,Integer> {
     List<Event> findByVerdict(String verdict);
 
-}
+    List<Event> findByUserId(int userId);
+    long countByVerdict(String verdict);}

@@ -22,4 +22,5 @@ public class EventRequest {
     private long timestamp;
     private int timeSpent;
     private boolean contestMode;
+    private int userId;
 }

@@ -1,5 +1,6 @@
 package com.raunak.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,5 +25,11 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name="user_id")
+    @JsonIgnore
     private User user;
+
+
+    @ManyToOne
+    @JoinColumn(name = "contest_session_id")
+    private ContestSession contestSession;
 }

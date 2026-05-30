@@ -1,5 +1,6 @@
 package com.raunak.backend.controller;
 
+import com.raunak.backend.model.Event;
 import com.raunak.backend.model.User;
 import com.raunak.backend.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -23,4 +24,20 @@ public UserController(UserService userService){
     public List<User> getUsers(){
     return userService.getAllUsers();
 }
+
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable int id){
+        return userService.getUserById(id);
+    }
+
+
+
+    @GetMapping("/{id}/events")
+    public List<Event> getUserEvents(@PathVariable int id){
+    return userService.getUserEvents(id);
+    }
 }
+
+
+

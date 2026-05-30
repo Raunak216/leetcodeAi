@@ -1,5 +1,6 @@
 package com.raunak.backend.service;
 
+import com.raunak.backend.model.Event;
 import com.raunak.backend.model.User;
 import com.raunak.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,17 @@ public class UserService {
     }
     public List<User> getAllUsers(){
         return userRepository.findAll();
+    }
+
+    public User getUserById(int id){
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+    }
+
+    public List<Event> getUserEvents(int userId){
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        return user.getEvents();
     }
 
 }

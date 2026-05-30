@@ -40,4 +40,9 @@ public class EventController {
     public void deleteEvent(@PathVariable int id){
          eventService.deleteEvent(id);
     }
+
+    @GetMapping("/users/{userId}")
+    public List<Event> getEventByUserId(@PathVariable int userId){
+        return eventService.getEventByUserId(userId);
+    }
 }
