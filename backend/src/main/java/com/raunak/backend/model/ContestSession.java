@@ -25,4 +25,8 @@ public class ContestSession {
     @OneToMany(mappedBy = "contestSession")
     @JsonIgnore
     private List<Event> events;
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 }

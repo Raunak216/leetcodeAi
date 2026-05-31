@@ -1,5 +1,6 @@
 package com.raunak.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,4 +24,8 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Event> events;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<ContestSession> contestSessions;
 }
