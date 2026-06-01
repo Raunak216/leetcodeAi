@@ -23,4 +23,5 @@ public class EventRequest {
     private int timeSpent;
     private boolean contestMode;
     private int userId;
+    private int contestSessionId;
 }

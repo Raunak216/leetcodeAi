@@ -4,6 +4,7 @@ import com.raunak.backend.dto.EventRequest;
 import com.raunak.backend.exception.EventNotFoundException;
 import com.raunak.backend.model.Event;
 import com.raunak.backend.model.User;
+import com.raunak.backend.repository.ContestSessionRepository;
 import com.raunak.backend.repository.EventRepository;
 import com.raunak.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,11 @@ public class EventService {
 
     private EventRepository eventRepository;
     private UserRepository userRepository;
-    public EventService(EventRepository eventRepository,UserRepository userRepository){
+    private final ContestSessionRepository contestSessionRepository;
+    public EventService(EventRepository eventRepository,UserRepository userRepository,ContestSessionRepository contestSessionRepository){
         this.eventRepository=eventRepository;
         this.userRepository=userRepository;
+        this.contestSessionRepository=contestSessionRepository;
     }
 
 
