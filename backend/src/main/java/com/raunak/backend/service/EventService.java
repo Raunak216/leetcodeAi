@@ -1,7 +1,9 @@
 package com.raunak.backend.service;
 
+import com.raunak.backend.dto.AnalyticsResponse;
 import com.raunak.backend.dto.EventRequest;
 import com.raunak.backend.exception.EventNotFoundException;
+import com.raunak.backend.model.ContestSession;
 import com.raunak.backend.model.Event;
 import com.raunak.backend.model.User;
 import com.raunak.backend.repository.ContestSessionRepository;
@@ -29,6 +31,9 @@ public class EventService {
         Event event=new Event();
         User user=userRepository.findById(request.getUserId()).orElseThrow(()->new RuntimeException("User not found"));
         event.setUser(user);
+
+        ContestSession contestSession = contestSessionRepository.findById(request.getContestSessionId()).orElseThrow(() -> new RuntimeException("Contest Session not found"));
+        event.setContestSession(contestSession);
         event.setProblemId(request.getProblemId());
         event.setEventType(request.getEventType());
         event.setVerdict(request.getVerdict());
@@ -53,5 +58,16 @@ public class EventService {
 
     public List<Event> getEventByUserId(int userId){
         return eventRepository.findByUserId(userId);
+    }
+
+    public AnalyticsResponse
+    getSessionAnalytics(int sessionId){
+        long totalEvents =eventRepository.countByContestSessionId(sessionId);
+
+        long accepted = eventRepository.countByContestSessionIdAndVerdict(sessionId, "AC");
+
+        long wrongAnswers = eventRepository.countByContestSessionIdAndVerdict(sessionId, "WA");
+
+        return new AnalyticsResponse(totalEvents, accepted, wrongAnswers);
     }
 }

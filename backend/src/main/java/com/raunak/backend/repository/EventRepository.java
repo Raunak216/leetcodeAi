@@ -9,4 +9,11 @@ public interface EventRepository extends JpaRepository<Event,Integer> {
     List<Event> findByVerdict(String verdict);
 
     List<Event> findByUserId(int userId);
-    long countByVerdict(String verdict);}
+    long countByVerdict(String verdict);
+    long countByContestSessionId(int contestSessionId);
+
+    long countByContestSessionIdAndVerdict(
+            int contestSessionId,
+            String verdict
+    );
+}

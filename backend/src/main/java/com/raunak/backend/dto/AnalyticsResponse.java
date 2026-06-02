@@ -10,6 +10,6 @@ import lombok.Setter;
 public class AnalyticsResponse {
 
     private long totalEvents;
-    private long totalAccepted;
-    private long totalWrongAnswers;
+    private long accepted;
+    private long wrongAnswers;
 }

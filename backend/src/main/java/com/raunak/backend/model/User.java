@@ -23,6 +23,7 @@ public class User {
     private String email;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Event> events;
 
     @OneToMany(mappedBy = "user")
