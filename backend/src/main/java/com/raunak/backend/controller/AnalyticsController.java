@@ -15,8 +15,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/contest-session/{id}")
-    public AnalyticsResponse getSessionAnalytics(
-            @PathVariable int id) {
+    public AnalyticsResponse getSessionAnalytics(@PathVariable int id) {
 
         return eventService.getSessionAnalytics(id);
     }

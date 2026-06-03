@@ -2,6 +2,8 @@ package com.raunak.backend.service;
 
 import com.raunak.backend.dto.AnalyticsResponse;
 import com.raunak.backend.dto.EventRequest;
+import com.raunak.backend.dto.ProblemAnalytics;
+import com.raunak.backend.dto.TimelineEvent;
 import com.raunak.backend.exception.EventNotFoundException;
 import com.raunak.backend.model.ContestSession;
 import com.raunak.backend.model.Event;
@@ -11,8 +13,11 @@ import com.raunak.backend.repository.EventRepository;
 import com.raunak.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.stream.Collectors;
 @Service
 public class EventService {
 
@@ -60,14 +65,62 @@ public class EventService {
         return eventRepository.findByUserId(userId);
     }
 
-    public AnalyticsResponse
-    getSessionAnalytics(int sessionId){
+    public AnalyticsResponse getSessionAnalytics(int sessionId){
         long totalEvents =eventRepository.countByContestSessionId(sessionId);
 
         long accepted = eventRepository.countByContestSessionIdAndVerdict(sessionId, "AC");
 
         long wrongAnswers = eventRepository.countByContestSessionIdAndVerdict(sessionId, "WA");
+        List<Event> events = eventRepository.findByContestSessionId(sessionId);
+        double averageTimeSpent = events.stream()
+                        .mapToInt(Event::getTimeSpent)
+                        .average()
+                        .orElse(0);
 
-        return new AnalyticsResponse(totalEvents, accepted, wrongAnswers);
+        double acceptanceRate = totalEvents == 0 ? 0 : (accepted * 100.0) / totalEvents;
+
+        Map<String,Integer> attempts = new HashMap<>();
+        for(Event event : events){
+            String problemId = event.getProblemId();
+            attempts.put(problemId, attempts.getOrDefault(problemId,0)+1);
+        }
+        String mostAttemptedProblem = "";
+        int maxAttempts = 0;
+        for(String problemId : attempts.keySet()){
+            if(attempts.get(problemId) > maxAttempts){
+                maxAttempts = attempts.get(problemId);
+                mostAttemptedProblem = problemId;
+            }
+        }
+
+        return new AnalyticsResponse(totalEvents, accepted, wrongAnswers, acceptanceRate, averageTimeSpent, mostAttemptedProblem, maxAttempts);
+    }
+    public List<ProblemAnalytics> getProblemAttempts(int sessionId){
+        List<Event> events = eventRepository.findByContestSessionId(sessionId);
+        Map<String,Integer> attempts = new HashMap<>();
+
+        for(Event event : events){
+            String problemId = event.getProblemId();
+            attempts.put(problemId,attempts.getOrDefault(problemId,0)+1);
+        }
+        List<ProblemAnalytics> result = new ArrayList<>();
+
+        for(String problemId :attempts.keySet()){
+            result.add(new ProblemAnalytics(problemId, attempts.get(problemId)));
+        }
+        return result;
+    }
+
+    public List<TimelineEvent> getSessionTimeline(int sessionId){
+
+        List<Event> events = eventRepository.findByContestSessionIdOrderByTimestampAsc(sessionId);
+
+        List<TimelineEvent> result = new ArrayList<>();
+
+        for(Event event : events){
+            result.add(new TimelineEvent(event.getProblemId(), event.getVerdict(), event.getTimestamp()));
+        }
+
+        return result;
     }
 }

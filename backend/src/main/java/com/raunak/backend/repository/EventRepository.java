@@ -16,4 +16,7 @@ public interface EventRepository extends JpaRepository<Event,Integer> {
             int contestSessionId,
             String verdict
     );
+    List<Event> findByContestSessionId(int contestSessionId);
+
+    List<Event> findByContestSessionIdOrderByTimestampAsc(int contestSessionId);
 }
