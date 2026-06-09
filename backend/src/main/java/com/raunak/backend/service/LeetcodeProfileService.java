@@ -7,6 +7,7 @@ import com.raunak.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.raunak.backend.dto.LeetcodeProfileRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,7 +32,7 @@ public class LeetcodeProfileService {
         profile.setMediumSolved(request.getMediumSolved());
         profile.setHardSolved(request.getHardSolved());
         profile.setContestRating(request.getContestRating());
-        profile.setLastSyncedAt(request.getLastSyncedAt());
+        profile.setLastSyncedAt(LocalDateTime.now());
         profile.setUser(user);
 
         return leetcodeProfileRepository.save(profile);
