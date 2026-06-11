@@ -1,14 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "CP Behavior Analyzer",
+  "name": "AI Placement Engine",
   "version": "1.0",
+
+  "action": {
+    "default_popup": "index.html"
+  },
 
   "content_scripts": [
     {
       "matches": [
         "https://leetcode.com/problems/*"
       ],
-      "ts": ["content.ts"]
+      "js": [
+        "content.js"
+      ]
     }
   ]
 }
