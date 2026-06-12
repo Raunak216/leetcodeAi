@@ -16,5 +16,16 @@
         "content.js"
       ]
     }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "interceptor.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ]
 }

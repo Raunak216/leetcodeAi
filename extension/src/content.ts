@@ -1,3 +1,14 @@
+const script = document.createElement("script");
+
+// @ts-ignore
+script.src = chrome.runtime.getURL(
+    "interceptor.js"
+);
+
+(document.head || document.documentElement)
+    .appendChild(script);
+
+script.remove();
 console.log("AI Placement Engine Loaded");
 
 let currentPath = location.pathname;
@@ -59,3 +70,22 @@ setInterval(() => {
     }
 
 }, 1000);
+window.addEventListener("message", (event) => {
+
+    if (event.source !== window) {
+        return;
+    }
+
+    if (
+        event.data?.source !==
+        "AI_PLACEMENT_ENGINE"
+    ) {
+        return;
+    }
+
+    console.log(
+        "INTERCEPTED EVENT:",
+        event.data
+    );
+
+});
