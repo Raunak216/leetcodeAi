@@ -4,34 +4,61 @@ const originalFetch = window.fetch;
 
 window.fetch = async (...args) => {
 
-    const response = await originalFetch(...args);
+    const url = args[0];
+
+    let requestBody = null;
+
+    if (args[1]?.body) {
+
+        try {
+
+            requestBody = JSON.parse(
+                args[1].body
+            );
+
+        } catch (e) {}
+
+    }
+
+    const response =
+        await originalFetch(...args);
 
     try {
 
-        const url = args[0];
-
-        if (typeof url === "string") {
-
-            if (
+        if (
+            typeof url === "string" &&
+            (
                 url.includes("interpret_solution") ||
-                url.includes("/check/")
-            ) {
+                url.includes("/check/") ||
+                url.includes("/submit/")
+            )
+        ) {
 
-                const cloned = response.clone();
+            const cloned =
+                response.clone();
 
-                const data = await cloned.json();
+            const responseData =
+                await cloned.json();
 
-                window.postMessage({
-                    source: "AI_PLACEMENT_ENGINE",
-                    url,
-                    data
-                });
+            window.postMessage({
 
-            }
+                source:
+                    "AI_PLACEMENT_ENGINE",
+
+                url,
+
+                requestBody,
+
+                responseData
+
+            });
+
         }
 
     } catch (e) {
+
         console.error(e);
+
     }
 
     return response;

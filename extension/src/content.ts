@@ -1,5 +1,6 @@
 const script = document.createElement("script");
-
+let latestCode = "";
+let latestLanguage = "";
 // @ts-ignore
 script.src = chrome.runtime.getURL(
     "interceptor.js"
@@ -8,7 +9,6 @@ script.src = chrome.runtime.getURL(
 (document.head || document.documentElement)
     .appendChild(script);
 
-script.remove();
 console.log("AI Placement Engine Loaded");
 
 let currentPath = location.pathname;
@@ -70,22 +70,159 @@ setInterval(() => {
     }
 
 }, 1000);
-window.addEventListener("message", (event) => {
 
-    if (event.source !== window) {
-        return;
+
+window.addEventListener(
+    "message",
+    (event) => {
+
+        if (event.source !== window)
+            return;
+
+        if (
+            event.data?.source !==
+            "AI_PLACEMENT_ENGINE"
+        )
+            return;
+
+        const url =
+            event.data.url;
+
+        const requestBody =
+            event.data.requestBody;
+
+        const responseData =
+            event.data.responseData;
+
+        // RUN START
+
+        if (
+            url.includes(
+                "interpret_solution"
+            )
+        ) {
+            latestCode =
+                requestBody?.typed_code ?? "";
+
+            latestLanguage =
+                requestBody?.lang ?? "";
+            console.log(
+                "RUN STARTED"
+            );
+
+
+            console.log(
+                requestBody
+            );
+
+            return;
+        }
+
+        // RUN/SUBMIT RESULT
+
+        if (
+            responseData?.state ===
+            "SUCCESS"
+        ) {
+
+            if (
+                responseData?.state ===
+                "SUCCESS"
+            ) {
+
+                let eventType = "UNKNOWN";
+
+                if (
+                    responseData.task_name ===
+                    "judger.runcodetask.RunCode"
+                ) {
+                    eventType = "RUN";
+                }
+                else if (
+                    responseData.task_name ===
+                    "judger.judgetask.Judge"
+                ) {
+                    eventType = "SUBMIT";
+                }
+
+                const attempt = {
+
+                    questionSlug:
+                    extractProblemData()?.slug,
+
+                    title:
+                    extractProblemData()?.title,
+
+                    topic:
+                        "UNKNOWN",
+
+                    difficulty:
+                    extractProblemData()?.difficulty,
+
+                    language:
+                    latestLanguage,
+
+                    verdict:
+                    responseData.status_msg,
+
+                    eventType,
+
+                    runtime:
+                        Number(
+                            responseData.display_runtime
+                        ) || null,
+
+                    memory:
+                        responseData.memory ?? null,
+
+                    code:
+                        latestCode ?? null,
+
+                    attempts: 1,
+
+                    timeSpent: 0,
+
+                    accepted:
+                        responseData.status_msg ===
+                        "Accepted",
+
+                    userId: 1
+                };
+
+                console.log(
+                    "SENDING TO BACKEND",
+                    attempt
+                );
+
+                fetch(
+                    "http://localhost:8080/attempts",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(
+                                attempt
+                            )
+                    }
+                )
+                    .then(res => res.json())
+                    .then(data =>
+                        console.log(
+                            "Saved:",
+                            data
+                        )
+                    )
+                    .catch(err =>
+                        console.error(
+                            err
+                        )
+                    );
+            }
+        }
     }
-
-    if (
-        event.data?.source !==
-        "AI_PLACEMENT_ENGINE"
-    ) {
-        return;
-    }
-
-    console.log(
-        "INTERCEPTED EVENT:",
-        event.data
-    );
-
-});
+);
