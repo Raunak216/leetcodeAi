@@ -24,4 +24,8 @@ public class EventRequest {
     private boolean contestMode;
     private int userId;
     private int contestSessionId;
+    private String questionSlug;
+    private Integer runtime;
+    private Integer memory;
+    private String code;
 }

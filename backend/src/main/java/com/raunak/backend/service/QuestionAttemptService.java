@@ -20,20 +20,60 @@ public class QuestionAttemptService {
         this.userRepository = userRepository;
     }
 
-    public QuestionAttempt saveAttempt(QuestionAttemptRequest request) {
+    public QuestionAttempt saveAttempt(
+            QuestionAttemptRequest request
+    ) {
 
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
-        QuestionAttempt attempt = new QuestionAttempt();
-        attempt.setQuestionSlug(request.getQuestionSlug());
-        attempt.setTitle(request.getTitle());
-        attempt.setTopic(request.getTopic());
-        attempt.setDifficulty(request.getDifficulty());
-        attempt.setAttempts(request.getAttempts());
-        attempt.setTimeSpent(request.getTimeSpent());
-        attempt.setAccepted(request.isAccepted());
+        User user = userRepository
+                .findById(request.getUserId())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        QuestionAttempt attempt =
+                new QuestionAttempt();
+
+        attempt.setQuestionSlug(
+                request.getQuestionSlug());
+
+        attempt.setTitle(
+                request.getTitle());
+
+        attempt.setTopic(
+                request.getTopic());
+
+        attempt.setDifficulty(
+                request.getDifficulty());
+
+        attempt.setLanguage(
+                request.getLanguage());
+
+        attempt.setVerdict(
+                request.getVerdict());
+
+        attempt.setRuntime(
+                request.getRuntime());
+
+        attempt.setMemory(
+                request.getMemory());
+
+        attempt.setCode(
+                request.getCode());
+
+        attempt.setAttempts(
+                request.getAttempts());
+        attempt.setEventType(
+                request.getEventType()
+        );
+        attempt.setTimeSpent(
+                request.getTimeSpent());
+
+        attempt.setAccepted(
+                request.isAccepted());
+
         attempt.setUser(user);
 
-        return questionAttemptRepository.save(attempt);
+        return questionAttemptRepository
+                .save(attempt);
     }
 
     public List<QuestionAttempt> getAttemptsByUser(int userId) {

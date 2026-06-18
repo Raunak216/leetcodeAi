@@ -2,7 +2,9 @@
   "manifest_version": 3,
   "name": "AI Placement Engine",
   "version": "1.0",
-
+  "permissions": [
+    "storage"
+  ],
   "action": {
     "default_popup": "index.html"
   },

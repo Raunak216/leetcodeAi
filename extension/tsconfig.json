@@ -3,7 +3,7 @@
     "target": "es2023",
     "module": "esnext",
     "lib": ["ES2023", "DOM"],
-    "types": ["node"],
+    "types": ["chrome", "node"],
     "skipLibCheck": true,
 
     /* Bundler mode */

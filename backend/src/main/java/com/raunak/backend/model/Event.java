@@ -22,7 +22,12 @@ public class Event {
     private long timestamp;
     private int timeSpent;
     private boolean contestMode;
+    private String questionSlug;
+    private Integer runtime;
+    private Integer memory;
 
+    @Column(columnDefinition = "TEXT")
+    private String code;
     @ManyToOne
     @JoinColumn(name="user_id")
     @JsonIgnore

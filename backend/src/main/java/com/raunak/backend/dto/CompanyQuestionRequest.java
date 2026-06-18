@@ -1,5 +1,6 @@
 package com.raunak.backend.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,26 +10,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionAttemptRequest {
+public class CompanyQuestionRequest {
 
     private String questionSlug;
     private String title;
-
     private String topic;
     private String difficulty;
 
-    private String language;
-    private String verdict;
-    private String eventType;
-    private Integer runtime;
-    private Integer memory;
-
-    private String code;
-
-    private int attempts;
-    private int timeSpent;
-
-    private boolean accepted;
-
-    private int userId;
+    private int companyId;
 }

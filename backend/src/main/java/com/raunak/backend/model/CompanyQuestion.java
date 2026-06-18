@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class QuestionAttempt {
+public class CompanyQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,20 +20,7 @@ public class QuestionAttempt {
     private String topic;
     private String difficulty;
 
-    private String language;
-    private String verdict;
-    private String eventType;
-    private Integer runtime;
-    private Integer memory;
-
-    @Column(columnDefinition = "TEXT")
-    private String code;
-
-    private int attempts;
-    private int timeSpent;
-    private boolean accepted;
-
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "company_id")
+    private Company company;
 }
