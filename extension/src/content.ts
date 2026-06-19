@@ -291,11 +291,11 @@ window.addEventListener(
 
             const currentCode =
                 requestBody?.typed_code ?? "";
-            console.log(
-                "CURRENT CODE",
-                currentCode.length,
-                currentCode.substring(0, 50)
-            );
+            // console.log(
+            //     "CURRENT CODE",
+            //     currentCode.length,
+            //     currentCode.substring(0, 50)
+            // );
 
             const journey =
                 getCurrentJourney();
@@ -308,15 +308,12 @@ window.addEventListener(
                 buildDiff(
                     journey.lastCode,
                     currentCode
-                );console.log(
-                "LAST CODE",
-                journey.lastCode.length
-            );
-
-            console.log(
-                "DIFF GENERATED",
-                codeDiff
-            );
+                );
+            //
+            // console.log(
+            //     "DIFF GENERATED",
+            //     codeDiff
+            // );
 
             journey.pendingDiff =
                 codeDiff;

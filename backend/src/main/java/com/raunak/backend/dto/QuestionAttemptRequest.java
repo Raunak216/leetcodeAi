@@ -13,22 +13,10 @@ public class QuestionAttemptRequest {
 
     private String questionSlug;
     private String title;
-
-    private String topic;
     private String difficulty;
-
     private String language;
-    private String verdict;
-    private String eventType;
     private Integer runtime;
     private Integer memory;
-
-    private String code;
-
-    private int attempts;
-    private int timeSpent;
-
-    private boolean accepted;
-
+    private String journeyJson;
     private int userId;
 }

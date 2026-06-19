@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -16,22 +18,24 @@ public class QuestionAttempt {
     private int id;
 
     private String questionSlug;
+
     private String title;
-    private String topic;
+
     private String difficulty;
 
     private String language;
-    private String verdict;
-    private String eventType;
+
     private Integer runtime;
+
     private Integer memory;
 
     @Column(columnDefinition = "TEXT")
-    private String code;
+    private String journeyJson;
 
-    private int attempts;
-    private int timeSpent;
-    private boolean accepted;
+    @Column(columnDefinition = "TEXT")
+    private String aiResponseJson;
+
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

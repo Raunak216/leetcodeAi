@@ -7,6 +7,8 @@ import com.raunak.backend.repository.QuestionAttemptRepository;
 import com.raunak.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,62 +17,69 @@ public class QuestionAttemptService {
     private final QuestionAttemptRepository questionAttemptRepository;
     private final UserRepository userRepository;
 
-    public QuestionAttemptService(QuestionAttemptRepository questionAttemptRepository, UserRepository userRepository) {
-        this.questionAttemptRepository = questionAttemptRepository;
-        this.userRepository = userRepository;
+    public QuestionAttemptService(
+            QuestionAttemptRepository questionAttemptRepository,
+            UserRepository userRepository
+    ) {
+        this.questionAttemptRepository =
+                questionAttemptRepository;
+
+        this.userRepository =
+                userRepository;
     }
 
     public QuestionAttempt saveAttempt(
             QuestionAttemptRequest request
     ) {
 
-        User user = userRepository
-                .findById(request.getUserId())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user =
+                userRepository
+                        .findById(
+                                request.getUserId()
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "User not found"
+                                        )
+                        );
 
         QuestionAttempt attempt =
                 new QuestionAttempt();
 
         attempt.setQuestionSlug(
-                request.getQuestionSlug());
+                request.getQuestionSlug()
+        );
 
         attempt.setTitle(
-                request.getTitle());
-
-        attempt.setTopic(
-                request.getTopic());
+                request.getTitle()
+        );
 
         attempt.setDifficulty(
-                request.getDifficulty());
+                request.getDifficulty()
+        );
 
         attempt.setLanguage(
-                request.getLanguage());
-
-        attempt.setVerdict(
-                request.getVerdict());
+                request.getLanguage()
+        );
 
         attempt.setRuntime(
-                request.getRuntime());
+                request.getRuntime()
+        );
 
         attempt.setMemory(
-                request.getMemory());
-
-        attempt.setCode(
-                request.getCode());
-
-        attempt.setAttempts(
-                request.getAttempts());
-        attempt.setEventType(
-                request.getEventType()
+                request.getMemory()
         );
-        attempt.setTimeSpent(
-                request.getTimeSpent());
 
-        attempt.setAccepted(
-                request.isAccepted());
-
-        attempt.setUser(user);
+        attempt.setJourneyJson(
+                request.getJourneyJson()
+        );
+        attempt.setCreatedAt(
+                LocalDateTime.now()
+        );
+        attempt.setUser(
+                user
+        );
 
         return questionAttemptRepository
                 .save(attempt);

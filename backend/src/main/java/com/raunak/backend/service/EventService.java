@@ -1,6 +1,5 @@
 package com.raunak.backend.service;
 
-import com.raunak.backend.dto.AnalyticsResponse;
 import com.raunak.backend.dto.EventRequest;
 import com.raunak.backend.dto.ProblemAnalytics;
 import com.raunak.backend.dto.TimelineEvent;
@@ -64,36 +63,6 @@ public class EventService {
         return eventRepository.findByUserId(userId);
     }
 
-    public AnalyticsResponse getSessionAnalytics(int sessionId){
-        long totalEvents =eventRepository.countByContestSessionId(sessionId);
-
-        long accepted = eventRepository.countByContestSessionIdAndVerdict(sessionId, "AC");
-
-        long wrongAnswers = eventRepository.countByContestSessionIdAndVerdict(sessionId, "WA");
-        List<Event> events = eventRepository.findByContestSessionId(sessionId);
-        double averageTimeSpent = events.stream()
-                        .mapToInt(Event::getTimeSpent)
-                        .average()
-                        .orElse(0);
-
-        double acceptanceRate = totalEvents == 0 ? 0 : (accepted * 100.0) / totalEvents;
-
-        Map<String,Integer> attempts = new HashMap<>();
-        for(Event event : events){
-            String problemId = event.getProblemId();
-            attempts.put(problemId, attempts.getOrDefault(problemId,0)+1);
-        }
-        String mostAttemptedProblem = "";
-        int maxAttempts = 0;
-        for(String problemId : attempts.keySet()){
-            if(attempts.get(problemId) > maxAttempts){
-                maxAttempts = attempts.get(problemId);
-                mostAttemptedProblem = problemId;
-            }
-        }
-
-        return new AnalyticsResponse(totalEvents, accepted, wrongAnswers, acceptanceRate, averageTimeSpent, mostAttemptedProblem, maxAttempts);
-    }
     public List<ProblemAnalytics> getProblemAttempts(int sessionId){
         List<Event> events = eventRepository.findByContestSessionId(sessionId);
         Map<String,Integer> attempts = new HashMap<>();
