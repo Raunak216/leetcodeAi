@@ -33,4 +33,13 @@ public class User {
     @OneToMany(mappedBy="user")
     @JsonIgnore
     private List<LeetcodeProfile> profiles;
+
+    @OneToOne(mappedBy = "user")
+    private DsaSkillProfile dsaSkillProfile;
+
+    @OneToOne(mappedBy = "user")
+    private ReasoningSkillProfile reasoningSkillProfile;
+
+    @OneToOne(mappedBy = "user")
+    private EngineeringSkillProfile engineeringSkillProfile;
 }

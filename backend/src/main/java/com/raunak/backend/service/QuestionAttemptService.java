@@ -16,16 +16,19 @@ public class QuestionAttemptService {
 
     private final QuestionAttemptRepository questionAttemptRepository;
     private final UserRepository userRepository;
+    private final AiAnalysisService aiAnalysisService;
 
     public QuestionAttemptService(
             QuestionAttemptRepository questionAttemptRepository,
-            UserRepository userRepository
+            UserRepository userRepository, AiAnalysisService aiAnalysisService
     ) {
         this.questionAttemptRepository =
                 questionAttemptRepository;
 
         this.userRepository =
                 userRepository;
+        this.aiAnalysisService =
+                aiAnalysisService;
     }
 
     public QuestionAttempt saveAttempt(
@@ -81,9 +84,11 @@ public class QuestionAttemptService {
                 user
         );
 
-        return questionAttemptRepository
-                .save(attempt);
+        QuestionAttempt saved = questionAttemptRepository.save(attempt);
+        aiAnalysisService.analyze(saved);
+        return saved;
     }
+
 
     public List<QuestionAttempt> getAttemptsByUser(int userId) {
         return questionAttemptRepository.findByUserId(userId);

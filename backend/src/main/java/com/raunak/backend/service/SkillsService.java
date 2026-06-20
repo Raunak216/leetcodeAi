@@ -1,10 +1,12 @@
 package com.raunak.backend.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.raunak.backend.SkillTopics;
-import com.raunak.backend.model.Skills;
+import com.raunak.backend.DsaSkillTopics;
+import com.raunak.backend.dto.SkillValue;
+import com.raunak.backend.enums.SkillSignal;
+import com.raunak.backend.model.DsaSkillProfile;
 import com.raunak.backend.model.User;
-import com.raunak.backend.repository.SkillsRepository;
+import com.raunak.backend.repository.DsaSkillProfileRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -12,16 +14,16 @@ import java.util.Map;
     @Service
     public class SkillsService {
 
-        private final SkillsRepository skillsRepository;
-
+        private final DsaSkillProfileRepository dsaSkillProfileRepository;
         private final ObjectMapper objectMapper;
 
         public SkillsService(
-                SkillsRepository skillsRepository,
+                DsaSkillProfileRepository dsaSkillProfileRepository,
                 ObjectMapper objectMapper
-        ) {
-            this.skillsRepository =
-                    skillsRepository;
+        )
+        {
+            this.dsaSkillProfileRepository =
+                    dsaSkillProfileRepository;
 
             this.objectMapper =
                     objectMapper;
@@ -30,14 +32,17 @@ import java.util.Map;
 
             try {
 
-                Map<String,Integer> skills =
+                Map<String, SkillValue> skills =
                         new HashMap<>();
 
-                for(String topic : SkillTopics.ALL_TOPICS){
+                for(String topic : DsaSkillTopics.ALL_TOPICS){
 
                     skills.put(
                             topic,
-                            50
+                            new SkillValue(
+                                    null,
+                                    0
+                            )
                     );
                 }
 
@@ -53,100 +58,137 @@ import java.util.Map;
                 );
             }
         }
+        private double getSignalValue(
+                SkillSignal signal
+        ) {
 
-        public void applyDelta(
+            return switch (signal) {
+
+                case EFFICIENT_SOLVE -> 100;
+
+                case CLEAN_SOLVE -> 85;
+
+                case STRUGGLE -> 50;
+
+                case MISTAKE -> 20;
+            };
+        }
+
+        private double updateMastery(
+                Double mastery,
+                int attempts,
+                double signal
+        ) {
+
+            if (mastery == null) {
+                return signal;
+            }
+
+            double alpha =
+                    Math.max(
+                            1.0 / (attempts + 1),
+                            0.2
+                    );
+
+            return mastery +
+                    alpha *
+                            (signal - mastery);
+        }
+
+        public void applySignal(
                 int userId,
-                Map<String,Integer> delta
+                String topic,
+                SkillSignal signal
         ) {
 
             try {
 
-                Skills skills =
-                        skillsRepository
-                                .findByUserId(
-                                        userId
-                                )
+                DsaSkillProfile profile =
+                        dsaSkillProfileRepository
+                                .findByUserId(userId)
                                 .orElseThrow();
 
-                Map<String,Integer> current =
+                Map<String, SkillValue> current =
                         objectMapper.readValue(
-                                skills.getSkillsJson(),
-                                new TypeReference<>() {}
+                                profile.getSkillsJson(),
+                                new TypeReference<
+                                        Map<String, SkillValue>
+                                        >() {}
                         );
 
-                for (
-                        String topic :
-                        delta.keySet()
-                ) {
+                SkillValue skillValue =
+                        current.get(topic);
 
-                    int currentScore =
-                            current.getOrDefault(
-                                    topic,
-                                    -1
+                if (skillValue == null) {
+
+                    skillValue =
+                            new SkillValue(
+                                    null,
+                                    0
                             );
-
-                    if (currentScore == -1) {
-                        currentScore = 50;
-                    }
-                    int newScore =
-                            currentScore +
-                                    delta.get(topic);
-
-                    newScore =
-                            Math.max(
-                                    0,
-                                    Math.min(
-                                            100,
-                                            newScore
-                                    )
-                            );
-
-                    current.put(
-                            topic,
-                            newScore
-                    );
                 }
 
-                skills.setSkillsJson(
+                double signalValue =
+                        getSignalValue(signal);
+
+                Double mastery =
+                        updateMastery(
+                                skillValue.getMastery(),
+                                skillValue.getAttempts(),
+                                signalValue
+                        );
+
+                skillValue.setMastery(
+                        mastery
+                );
+
+                skillValue.setAttempts(
+                        skillValue.getAttempts() + 1
+                );
+
+                current.put(
+                        topic,
+                        skillValue
+                );
+
+                profile.setSkillsJson(
                         objectMapper.writeValueAsString(
                                 current
                         )
                 );
 
-                skillsRepository.save(
-                        skills
-                );
+                dsaSkillProfileRepository
+                        .save(profile);
 
             } catch (Exception e) {
 
-                throw new RuntimeException(
-                        e
-                );
+                throw new RuntimeException(e);
             }
         }
-        public Skills getOrCreateSkills(
+
+        public DsaSkillProfile getOrCreateSkills(
                 User user
         ) {
 
-            return skillsRepository
+            return dsaSkillProfileRepository
                     .findByUserId(
                             user.getId()
                     )
                     .orElseGet(() -> {
 
-                        Skills skills =
-                                new Skills();
+                        DsaSkillProfile dsaSkillProfile =
+                                new DsaSkillProfile();
 
-                        skills.setUser(
+                        dsaSkillProfile.setUser(
                                 user
                         );
 
-                        skills.setSkillsJson(
+                        dsaSkillProfile.setSkillsJson(
                                 createInitialSkills()
                         );
 
-                        return skillsRepository
-                                .save(skills);
+                        return dsaSkillProfileRepository
+                                .save(dsaSkillProfile);
                     });
         }
 }
