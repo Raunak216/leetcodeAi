@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AnalysisMapperService {
 
-    private final SkillsService skillsService;
+    private final SkillProfileService skillProfileService;
 
     public AnalysisMapperService(
-            SkillsService skillsService
+            SkillProfileService skillProfileService
     ) {
-        this.skillsService = skillsService;
+        this.skillProfileService = skillProfileService;
     }
 
     public void applyAnalysis(
@@ -27,7 +27,7 @@ public class AnalysisMapperService {
             result.getDsaSignals()
                     .forEach((topic, signal) -> {
 
-                        skillsService.applySignal(
+                        skillProfileService.applySignal(
                                 userId,
                                 topic,
                                 SkillSignal.valueOf(signal)
@@ -42,7 +42,7 @@ public class AnalysisMapperService {
             result.getEngineeringSignals()
                     .forEach((topic, signal) -> {
 
-                        skillsService.applySignal(
+                        skillProfileService.applySignal(
                                 userId,
                                 topic,
                                 SkillSignal.valueOf(signal)
@@ -57,7 +57,7 @@ public class AnalysisMapperService {
             result.getReasoningSignals()
                     .forEach((topic, signal) -> {
 
-                        skillsService.applySignal(
+                        skillProfileService.applySignal(
                                 userId,
                                 topic,
                                 SkillSignal.valueOf(signal)

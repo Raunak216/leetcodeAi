@@ -2,7 +2,6 @@ package com.raunak.backend.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raunak.backend.dto.AnalysisResult;
-import com.raunak.backend.enums.SkillSignal;
 import com.raunak.backend.model.QuestionAttempt;
 import com.raunak.backend.repository.QuestionAttemptRepository;
 import org.springframework.stereotype.Service;
@@ -13,16 +12,16 @@ import java.util.Map;
 @Service
 public class AiAnalysisService {
 
-    private final SkillsService skillsService;
+    private final SkillProfileService skillProfileService;
     private final QuestionAttemptRepository questionAttemptRepository;
     private final AnalysisMapperService analysisMapperService;
     private final ObjectMapper objectMapper;
     public AiAnalysisService(
-            SkillsService skillsService,
+            SkillProfileService skillProfileService,
             QuestionAttemptRepository questionAttemptRepository,
             AnalysisMapperService analysisMapperService,ObjectMapper objectMapper
     ) {
-        this.skillsService = skillsService;
+        this.skillProfileService = skillProfileService;
         this.questionAttemptRepository = questionAttemptRepository;
         this.analysisMapperService = analysisMapperService;
         this.objectMapper=objectMapper;

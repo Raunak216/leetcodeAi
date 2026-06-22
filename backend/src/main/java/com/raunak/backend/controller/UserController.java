@@ -3,7 +3,7 @@ package com.raunak.backend.controller;
 import com.raunak.backend.enums.SkillSignal;
 import com.raunak.backend.model.Event;
 import com.raunak.backend.model.User;
-import com.raunak.backend.service.SkillsService;
+import com.raunak.backend.service.SkillProfileService;
 import com.raunak.backend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +13,10 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 private  UserService userService;
-    private SkillsService skillsService;
-
-public UserController(UserService userService,SkillsService skillsService){
+    private SkillProfileService skillProfileService;
+public UserController(UserService userService, SkillProfileService skillProfileService){
     this.userService=userService;
-    this.skillsService=skillsService;
+    this.skillProfileService = skillProfileService;
 }
 @PostMapping
     public User createUser(@RequestBody User user){
@@ -44,12 +43,22 @@ public UserController(UserService userService,SkillsService skillsService){
 
     @GetMapping("test")
     public void runthing (){
-    skillsService.applySignal(
+    skillProfileService.applySignal(
             4,
             "arrays",
             SkillSignal.MISTAKE
     );
 }
+    @PostMapping("/init/{id}")
+    public String init(@PathVariable int id){
+
+        User user =
+                userService.getUserById(id);
+
+        skillProfileService.getOrCreateProfile(user);
+
+        return "done";
+    }
 }
 
 

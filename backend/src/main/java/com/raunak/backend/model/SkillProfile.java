@@ -10,14 +10,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReasoningSkillProfile {
+public class SkillProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(columnDefinition = "TEXT")
-    private String skillsJson;
+    private String dsa;
+
+    @Column(columnDefinition = "TEXT")
+    private String engineering;
+
+    @Column(columnDefinition = "TEXT")
+    private String reasoning;
 
     @OneToOne
     @JoinColumn(name = "user_id")

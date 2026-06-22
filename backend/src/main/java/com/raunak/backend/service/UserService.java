@@ -10,16 +10,16 @@ import java.util.List;
 @Service
 public class UserService {
     private  UserRepository userRepository;
-    private final SkillsService skillsService;
+    private final SkillProfileService skillProfileService;
     public UserService(
             UserRepository userRepository,
-            SkillsService skillsService
+            SkillProfileService skillProfileService
     ){
         this.userRepository =
                 userRepository;
 
-        this.skillsService =
-                skillsService;
+        this.skillProfileService =
+                skillProfileService;
     }
     public User saveUser(
             User user
@@ -29,10 +29,9 @@ public class UserService {
                         user
                 );
 
-        skillsService
-                .getOrCreateSkills(
-                        savedUser
-                );
+        skillProfileService.getOrCreateProfile(
+                savedUser
+        );
 
         return savedUser;
     }

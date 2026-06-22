@@ -1,7 +1,22 @@
 package com.raunak.backend;
 
 public class ReasoningSkillTopics {
+    public static boolean contains(
+            String topic
+    ) {
+        for (
+                String t :
+                ALL_TOPICS
+        ) {
+            if (
+                    t.equals(topic)
+            ) {
+                return true;
+            }
+        }
 
+        return false;
+    }
     public static final String[] ALL_TOPICS = {
 
             "problem_understanding",

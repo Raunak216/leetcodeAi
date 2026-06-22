@@ -35,11 +35,5 @@ public class User {
     private List<LeetcodeProfile> profiles;
 
     @OneToOne(mappedBy = "user")
-    private DsaSkillProfile dsaSkillProfile;
-
-    @OneToOne(mappedBy = "user")
-    private ReasoningSkillProfile reasoningSkillProfile;
-
-    @OneToOne(mappedBy = "user")
-    private EngineeringSkillProfile engineeringSkillProfile;
+    private SkillProfile skillProfile;
 }
