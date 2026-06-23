@@ -12,7 +12,62 @@ public class AnalysisMapperService {
     public AnalysisMapperService(
             SkillProfileService skillProfileService
     ) {
-        this.skillProfileService = skillProfileService;
+        this.skillProfileService =
+                skillProfileService;
+    }
+
+    private void applySignals(
+            int userId,
+            java.util.Map<String, String> signals
+    ) {
+
+        if (
+                signals == null
+        ) {
+            return;
+        }
+
+        signals.forEach(
+                (topic, signalText) -> {
+
+                    if (
+                            !skillProfileService
+                                    .isValidTopic(
+                                            topic
+                                    )
+                    ) {
+
+                        System.out.println(
+                                "INVALID TOPIC: "
+                                        + topic
+                        );
+
+                        return;
+                    }
+
+                    try {
+
+                        SkillSignal signal =
+                                SkillSignal.valueOf(
+                                        signalText
+                                );
+
+                        skillProfileService
+                                .applySignal(
+                                        userId,
+                                        topic,
+                                        signal
+                                );
+
+                    } catch (Exception e) {
+
+                        System.out.println(
+                                "INVALID SIGNAL: "
+                                        + signalText
+                        );
+                    }
+                }
+        );
     }
 
     public void applyAnalysis(
@@ -20,49 +75,19 @@ public class AnalysisMapperService {
             AnalysisResult result
     ) {
 
-        if (
-                result.getDsaSignals() != null
-        ) {
+        applySignals(
+                userId,
+                result.getDsaSignals()
+        );
 
-            result.getDsaSignals()
-                    .forEach((topic, signal) -> {
+        applySignals(
+                userId,
+                result.getEngineeringSignals()
+        );
 
-                        skillProfileService.applySignal(
-                                userId,
-                                topic,
-                                SkillSignal.valueOf(signal)
-                        );
-                    });
-        }
-
-        if (
-                result.getEngineeringSignals() != null
-        ) {
-
-            result.getEngineeringSignals()
-                    .forEach((topic, signal) -> {
-
-                        skillProfileService.applySignal(
-                                userId,
-                                topic,
-                                SkillSignal.valueOf(signal)
-                        );
-                    });
-        }
-
-        if (
-                result.getReasoningSignals() != null
-        ) {
-
-            result.getReasoningSignals()
-                    .forEach((topic, signal) -> {
-
-                        skillProfileService.applySignal(
-                                userId,
-                                topic,
-                                SkillSignal.valueOf(signal)
-                        );
-                    });
-        }
+        applySignals(
+                userId,
+                result.getReasoningSignals()
+        );
     }
 }

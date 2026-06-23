@@ -1,5 +1,8 @@
 package com.raunak.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raunak.backend.dto.AnalysisResult;
 import com.raunak.backend.dto.QuestionAttemptRequest;
 import com.raunak.backend.model.QuestionAttempt;
 import com.raunak.backend.model.User;
@@ -17,10 +20,13 @@ public class QuestionAttemptService {
     private final QuestionAttemptRepository questionAttemptRepository;
     private final UserRepository userRepository;
     private final AiAnalysisService aiAnalysisService;
-
+    private final GeminiService geminiService;
+    private final AnalysisMapperService analysisMapperService;
+    private final ObjectMapper objectMapper;
     public QuestionAttemptService(
             QuestionAttemptRepository questionAttemptRepository,
-            UserRepository userRepository, AiAnalysisService aiAnalysisService
+            UserRepository userRepository, AiAnalysisService aiAnalysisService,GeminiService geminiService
+            ,AnalysisMapperService analysisMapperService,ObjectMapper objectMapper
     ) {
         this.questionAttemptRepository =
                 questionAttemptRepository;
@@ -29,6 +35,9 @@ public class QuestionAttemptService {
                 userRepository;
         this.aiAnalysisService =
                 aiAnalysisService;
+        this.geminiService=geminiService;
+        this.analysisMapperService=analysisMapperService;
+        this.objectMapper=objectMapper;
     }
 
     public QuestionAttempt saveAttempt(
@@ -84,8 +93,34 @@ public class QuestionAttemptService {
                 user
         );
 
-        QuestionAttempt saved = questionAttemptRepository.save(attempt);
-        aiAnalysisService.analyze(saved);
+        QuestionAttempt saved =
+                questionAttemptRepository.save(
+                        attempt
+                );
+
+        AnalysisResult result =
+                geminiService.analyze(
+                        saved
+                );
+
+        analysisMapperService.applyAnalysis(
+                saved.getUser().getId(),
+                result
+        );
+        try{
+        saved.setAiResponseJson(
+                objectMapper.writeValueAsString(
+                        result
+                )
+        );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        questionAttemptRepository.save(
+                saved
+        );
+
         return saved;
     }
 

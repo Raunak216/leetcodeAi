@@ -1,14 +1,14 @@
 package com.raunak.backend.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-@AllArgsConstructor
 public class RecommendationResponse {
 
-    private String priority;
-    private String reason;
+    private List<String> recommendedQuestions;
+    private String reasoning;
 }

@@ -468,7 +468,7 @@ window.addEventListener(
 
             const payload = {
 
-                userId: 6,
+                userId: 7,
 
                 questionSlug:
                 journey.questionSlug,

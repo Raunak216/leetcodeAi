@@ -334,4 +334,19 @@ import java.util.Map;
                             .save(profile);
                 });
     }
+    public boolean isValidTopic(
+            String topic
+    ) {
+
+        return
+                DsaSkillTopics.contains(topic)
+
+                        ||
+
+                        EngineeringSkillTopics.contains(topic)
+
+                        ||
+
+                        ReasoningSkillTopics.contains(topic);
+    }
 }
