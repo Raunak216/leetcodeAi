@@ -63,61 +63,6 @@ public class GeminiService {
             );
         }
     }
-
-    public String buildRecommendationPrompt(
-            SkillProfile profile,
-            List<String> solvedQuestions
-    )
-    {
-        return """
-You are an expert DSA mentor.
-
-Analyze the user's skills and solved questions.
-
-Recommend 10 LeetCode questions.
-
-Rules:
-
-1. Focus on weak skills.
-2. Cover unexplored topics.
-3. Avoid recommending already solved questions.
-4. Balance interview preparation and learning.
-5. Return ONLY valid JSON.
-
-Return format:
-
-{
-  "recommendedQuestions":[
-      "Question Name"
-  ],
-  "reasoning":"..."
-}
-
-User Skill Profile:
-"""
-                + profile.getDsa()
-
-                + """
-
-Engineering Profile:
-"""
-
-                + profile.getEngineering()
-
-                + """
-
-Reasoning Profile:
-"""
-
-                + profile.getReasoning()
-
-                + """
-
-Previously Solved Questions:
-"""
-
-                + solvedQuestions;
-    }
     public String askGemini(
             String prompt
     ) {

@@ -2,7 +2,7 @@ package com.raunak.backend.controller;
 
 import com.raunak.backend.dto.RecommendationResponse;
 import com.raunak.backend.service.RecommendationService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;import com.raunak.backend.dto.CompanyRecommendationRequest;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -26,6 +26,18 @@ public class RecommendationController {
         return recommendationService
                 .getGeneralRecommendations(
                         userId
+                );
+    }
+    @PostMapping("/company")
+    public RecommendationResponse
+    getCompanyRecommendations(
+            @RequestBody
+            CompanyRecommendationRequest request
+    )
+    {
+        return recommendationService
+                .getCompanyRecommendations(
+                        request
                 );
     }
 }

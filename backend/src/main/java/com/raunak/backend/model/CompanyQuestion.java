@@ -6,6 +6,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {
+                                "title",
+                                "company_id"
+                        }
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,12 +25,11 @@ public class CompanyQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String questionSlug;
     private String title;
-    private String topic;
-    private String difficulty;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
+
+
 }

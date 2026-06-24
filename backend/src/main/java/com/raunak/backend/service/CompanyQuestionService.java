@@ -26,10 +26,9 @@ public class CompanyQuestionService {
                 () -> new RuntimeException("Company not found"));
 
         CompanyQuestion question = new CompanyQuestion();
-        question.setQuestionSlug(request.getQuestionSlug());
+
         question.setTitle(request.getTitle());
-        question.setTopic(request.getTopic());
-        question.setDifficulty(request.getDifficulty());
+
         question.setCompany(company);
 
         return companyQuestionRepository.save(question);

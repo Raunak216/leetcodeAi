@@ -147,4 +147,93 @@ Previously Solved Questions:
 
                 + solvedQuestions;
     }
+
+    public String buildCompanyRecommendationPrompt(
+            SkillProfile profile,
+            List<String> solvedQuestions,
+            List<String> companyQuestions,
+            String company,
+            int daysRemaining
+    )
+    {
+
+        return """
+You are an elite DSA mentor.
+
+Your goal is NOT to simply pick questions from the company list.
+
+Your goal is to create the BEST interview preparation plan.
+
+Inputs:
+
+1. User skill profile.
+2. User solved questions.
+3. Historical company questions.
+
+Rules:
+
+1. Recommend EXACTLY 10 questions.
+2. Avoid already solved questions.
+3. Improve weak skills.
+4. Increase topic breadth.
+5. Use company questions only as signals.
+6. You may recommend similar LeetCode questions not present in the company list.
+7. Prioritize interview success.
+8. Return ONLY valid JSON.
+
+Return JSON:
+
+{
+  "recommendedQuestions":[
+      "Question Name"
+  ],
+  "reasoning":"..."
+}
+
+Target Company:
+"""
+                + company
+
+                + """
+
+Days Remaining:
+"""
+
+                + daysRemaining
+
+                + """
+
+DSA Profile:
+"""
+
+                + profile.getDsa()
+
+                + """
+
+Engineering Profile:
+"""
+
+                + profile.getEngineering()
+
+                + """
+
+Reasoning Profile:
+"""
+
+                + profile.getReasoning()
+
+                + """
+
+Solved Questions:
+"""
+
+                + solvedQuestions
+
+                + """
+
+Company Questions:
+"""
+
+                + companyQuestions;
+    }
 }

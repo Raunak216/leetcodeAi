@@ -98,28 +98,48 @@ public class QuestionAttemptService {
                         attempt
                 );
 
-        AnalysisResult result =
-                geminiService.analyze(
-                        saved
-                );
+        try {
 
-        analysisMapperService.applyAnalysis(
-                saved.getUser().getId(),
-                result
-        );
-        try{
-        saved.setAiResponseJson(
-                objectMapper.writeValueAsString(
-                        result
-                )
-        );
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            AnalysisResult result =
+                    geminiService.analyze(
+                            saved
+                    );
+
+            analysisMapperService.applyAnalysis(
+                    saved.getUser().getId(),
+                    result
+            );
+
+            saved.setAiResponseJson(
+                    objectMapper.writeValueAsString(
+                            result
+                    )
+            );
+
+            saved.setAnalysisCompleted(
+                    true
+            );
+
+            questionAttemptRepository.save(
+                    saved
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            saved.setAnalysisCompleted(
+                    false
+            );
+
+            saved.setAnalysisRetryCount(
+                    saved.getAnalysisRetryCount() + 1
+            );
+
+            questionAttemptRepository.save(
+                    saved
+            );
         }
-
-        questionAttemptRepository.save(
-                saved
-        );
 
         return saved;
     }

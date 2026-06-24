@@ -29,6 +29,10 @@ public class QuestionAttempt {
 
     private Integer memory;
 
+    private Boolean analysisCompleted = false;
+
+    private Integer analysisRetryCount = 0;
+
     @Column(columnDefinition = "TEXT")
     private String journeyJson;
 

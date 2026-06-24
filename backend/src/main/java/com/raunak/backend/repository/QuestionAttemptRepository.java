@@ -8,5 +8,6 @@ import java.util.List;
 public interface QuestionAttemptRepository extends JpaRepository<QuestionAttempt,Integer> {
 
     List<QuestionAttempt> findByUserId(int userId);
-
+    List<QuestionAttempt>
+    findByAnalysisCompletedFalseAndAnalysisRetryCountLessThan(int maxRetry);
 }
