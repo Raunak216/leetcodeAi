@@ -26,4 +26,15 @@ public class QuestionAttemptController {
     public List<QuestionAttempt> getAttemptsByUser(@PathVariable int userId) {
         return questionAttemptService.getAttemptsByUser(userId);
     }
+    @GetMapping("/{attemptId}")
+    public QuestionAttempt getAttempt(
+            @PathVariable
+            int attemptId
+    )
+    {
+        return questionAttemptService
+                .getAttempt(
+                        attemptId
+                );
+    }
 }

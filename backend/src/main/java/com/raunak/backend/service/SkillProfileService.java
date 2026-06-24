@@ -349,4 +349,14 @@ import java.util.Map;
 
                         ReasoningSkillTopics.contains(topic);
     }
+    public SkillProfile getProfile(
+            int userId
+    )
+    {
+        return skillProfileRepository
+                .findByUserId(
+                        userId
+                )
+                .orElseThrow();
+    }
 }

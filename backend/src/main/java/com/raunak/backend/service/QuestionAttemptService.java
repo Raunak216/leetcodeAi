@@ -148,4 +148,14 @@ public class QuestionAttemptService {
     public List<QuestionAttempt> getAttemptsByUser(int userId) {
         return questionAttemptRepository.findByUserId(userId);
     }
+    public QuestionAttempt getAttempt(
+            int attemptId
+    )
+    {
+        return questionAttemptRepository
+                .findById(
+                        attemptId
+                )
+                .orElseThrow();
+    }
 }
