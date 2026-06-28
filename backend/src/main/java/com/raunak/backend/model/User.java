@@ -20,7 +20,12 @@ public class User {
     private int id;
 
     private String userName;
+
+    @Column(unique = true)
     private String email;
+
+    private String leetcodeUsername;
+    private boolean leetcodeVerified;
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
