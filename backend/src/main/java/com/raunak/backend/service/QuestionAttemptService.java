@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raunak.backend.dto.AnalysisResult;
 import com.raunak.backend.dto.QuestionAttemptRequest;
 import com.raunak.backend.model.QuestionAttempt;
+import com.raunak.backend.model.SkillProfile;
 import com.raunak.backend.model.User;
 import com.raunak.backend.repository.QuestionAttemptRepository;
 import com.raunak.backend.repository.UserRepository;
@@ -23,10 +24,11 @@ public class QuestionAttemptService {
     private final GeminiService geminiService;
     private final AnalysisMapperService analysisMapperService;
     private final ObjectMapper objectMapper;
+    private final SkillProfileService skillProfileService;
     public QuestionAttemptService(
             QuestionAttemptRepository questionAttemptRepository,
             UserRepository userRepository, AiAnalysisService aiAnalysisService,GeminiService geminiService
-            ,AnalysisMapperService analysisMapperService,ObjectMapper objectMapper
+            ,AnalysisMapperService analysisMapperService,ObjectMapper objectMapper,SkillProfileService skillProfileService
     ) {
         this.questionAttemptRepository =
                 questionAttemptRepository;
@@ -38,6 +40,7 @@ public class QuestionAttemptService {
         this.geminiService=geminiService;
         this.analysisMapperService=analysisMapperService;
         this.objectMapper=objectMapper;
+        this.skillProfileService=skillProfileService;
     }
 
     public QuestionAttempt saveAttempt(
@@ -55,6 +58,9 @@ public class QuestionAttemptService {
                                                 "User not found"
                                         )
                         );
+        SkillProfile profile =
+                skillProfileService.getOrCreateProfile(user);
+
 
         QuestionAttempt attempt =
                 new QuestionAttempt();

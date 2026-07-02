@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raunak.backend.dto.auth.AuthResponse;
 import com.raunak.backend.model.User;
 import com.raunak.backend.repository.UserRepository;
+import com.raunak.backend.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,8 @@ public class OAuth2SuccessHandler
 
     private final UserRepository userRepository;
 
+    private final UserService userService;
+
     private final JwtService jwtService;
 
     private final ObjectMapper objectMapper;
@@ -27,7 +30,8 @@ public class OAuth2SuccessHandler
     public OAuth2SuccessHandler(
             UserRepository userRepository,
             JwtService jwtService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            UserService userService
     ) {
 
         this.userRepository =
@@ -38,6 +42,7 @@ public class OAuth2SuccessHandler
 
         this.objectMapper =
                 objectMapper;
+        this.userService=userService;
     }
 
     @Override
@@ -83,10 +88,7 @@ public class OAuth2SuccessHandler
                                     false
                             );
 
-                            return userRepository
-                                    .save(
-                                            newUser
-                                    );
+                            return userService.saveUser(newUser);
                         });
 
         String jwt =
@@ -104,9 +106,11 @@ public class OAuth2SuccessHandler
                         user.isLeetcodeVerified()
                 );
 
-        response.setContentType(
-                "application/json"
-        );
+        if(request.getSession(false)!=null){
+            request.getSession(false).invalidate();
+        }
+
+        response.setContentType("application/json");
 
         objectMapper.writeValue(
                 response.getWriter(),

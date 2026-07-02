@@ -35,6 +35,11 @@ public class SecurityConfig {
 
                 .cors(
                         Customizer.withDefaults()
+                ).sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS
+                                )
                 )
 
 
@@ -57,8 +62,7 @@ public class SecurityConfig {
                                 )
                                 .permitAll()
 
-                                .anyRequest()
-                                .authenticated()
+                                .anyRequest().permitAll()
                 )
 
                 .oauth2Login(
