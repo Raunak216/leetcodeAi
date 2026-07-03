@@ -8,6 +8,7 @@ import com.raunak.backend.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -18,6 +19,8 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler
         implements AuthenticationSuccessHandler {
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     private final UserRepository userRepository;
 
@@ -112,9 +115,10 @@ public class OAuth2SuccessHandler
 
         response.setContentType("application/json");
 
-        objectMapper.writeValue(
-                response.getWriter(),
-                authResponse
+        response.sendRedirect(
+                frontendUrl +
+                        "/auth/success?token=" +
+                        jwt
         );
     }
 }
