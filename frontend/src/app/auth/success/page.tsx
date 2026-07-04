@@ -16,23 +16,18 @@ export default function AuthSuccessPage() {
 
         if (!token) {
           router.replace("/");
-
           return;
         }
 
         localStorage.setItem("token", token);
 
-        const response = await api.get("/auth/me");
-
-        localStorage.setItem("user", JSON.stringify(response.data));
+        await api.get("/auth/me");
 
         router.replace("/dashboard");
-      } catch (error) {
-        console.error(error);
+      } catch (e) {
+        console.error(e);
 
         localStorage.removeItem("token");
-
-        localStorage.removeItem("user");
 
         router.replace("/");
       }

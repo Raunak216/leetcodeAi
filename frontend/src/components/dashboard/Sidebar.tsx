@@ -1,8 +1,9 @@
 "use client";
 
 import { Brain, LogOut, Settings, User } from "lucide-react";
-
+import { useAuth } from "@/context/AuthContext";
 export default function Sidebar() {
+  const { logout } = useAuth();
   return (
     <aside className="flex w-64 flex-col border-r border-white/10">
       <div className="flex items-center gap-3 border-b border-white/10 p-5">
@@ -33,7 +34,10 @@ export default function Sidebar() {
           Settings
         </button>
 
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-white/60 transition hover:bg-white/5">
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-white/60 transition hover:bg-white/5"
+        >
           <LogOut size={18} />
           Sign Out
         </button>

@@ -1,24 +1,19 @@
 "use client";
 
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+    if (!loading && !user) {
       router.replace("/");
-
-      return;
     }
-
-    setLoading(false);
-  }, [router]);
+  }, [loading, user, router]);
 
   if (loading) {
     return null;

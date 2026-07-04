@@ -9,7 +9,11 @@ import RecommendationQueue from "@/components/dashboard/RecommendationQueue";
 import EmptyState from "@/components/dashboard/EmptyState";
 import RightSidebar from "@/components/dashboard/RightSidebar";
 import GeneratingState from "@/components/dashboard/GeneratingState";
-import AuthGuard from "@/components/auth/AuthGuard";
+import AuthGuard from "@/app/auth/AuthGuard";
+import {
+  generateGeneralRecommendation,
+  generateCompanyRecommendation,
+} from "@/services/recommendation";
 export default function DashboardPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "generated">(
     "idle",
@@ -24,7 +28,37 @@ export default function DashboardPage() {
       return () => clearTimeout(timer);
     }
   }, [status]);
+  const [recommendation, setRecommendation] = useState<any>(null);
 
+  const handleGenerate = async (data: any) => {
+    setStatus("loading");
+
+    try {
+      if (data.mode === "general") {
+        const result = await generateGeneralRecommendation({
+          interviewScheduled: data.interviewScheduled,
+
+          daysRemaining: data.daysRemaining,
+        });
+
+        setRecommendation(result);
+      } else {
+        const result = await generateCompanyRecommendation({
+          company: data.company,
+
+          daysRemaining: data.daysRemaining,
+        });
+
+        setRecommendation(result);
+      }
+
+      setStatus("generated");
+    } catch (e) {
+      console.error(e);
+
+      setStatus("idle");
+    }
+  };
   return (
     <AuthGuard>
       <main className="flex min-h-screen bg-[#050608] text-white">
@@ -36,16 +70,17 @@ export default function DashboardPage() {
           <div className="flex gap-7 p-6">
             <div className="flex-1">
               <RecommendationPanel
-                onGenerate={() => {
-                  setStatus("loading");
-                }}
+                onGenerate={handleGenerate}
+                disabled={status === "loading"}
               />
 
               {status === "idle" && <EmptyState />}
 
               {status === "loading" && <GeneratingState />}
 
-              {status === "generated" && <RecommendationQueue />}
+              {status === "generated" && (
+                <RecommendationQueue recommendation={recommendation} />
+              )}
             </div>
 
             <RightSidebar />

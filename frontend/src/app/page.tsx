@@ -1,5 +1,5 @@
-import HeroSection from "@/components/auth/HeroSection";
-import LoginCard from "@/components/auth/LoginCard";
+import HeroSection from "@/app/auth/HeroSection";
+import LoginCard from "@/app/auth/LoginCard";
 
 export default function HomePage() {
   return (

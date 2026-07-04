@@ -1,6 +1,7 @@
 package com.raunak.backend.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raunak.backend.dto.GeneralRecommendationRequest;
 import com.raunak.backend.dto.RecommendationResponse;
 import com.raunak.backend.model.QuestionAttempt;
 import com.raunak.backend.model.SkillProfile;
@@ -60,7 +61,8 @@ public class RecommendationService {
     }
     public RecommendationResponse
     getGeneralRecommendations(
-            int userId
+            int userId,
+            GeneralRecommendationRequest request
     ) {
 
         try {
@@ -88,9 +90,16 @@ public class RecommendationService {
             String prompt =
                     promptBuilderService
                             .buildRecommendationPrompt(
+
                                     profile,
-                                    solvedQuestions
+
+                                    solvedQuestions,
+
+                                    request.isInterviewScheduled(),
+
+                                    request.getDaysRemaining()
                             );
+
             System.out.println(prompt);
             String geminiResponse =
                     geminiService
@@ -114,6 +123,8 @@ public class RecommendationService {
 
     public RecommendationResponse
     getCompanyRecommendations(
+            int userId,
+
             CompanyRecommendationRequest request
     )
     {
@@ -123,14 +134,13 @@ public class RecommendationService {
             SkillProfile profile =
                     skillProfileRepository
                             .findByUserId(
-                                    request.getUserId()
-                            )
+                                    userId                            )
                             .orElseThrow();
 
             List<String> solvedQuestions =
                     questionAttemptRepository
                             .findByUserId(
-                                    request.getUserId()
+                                    userId
                             )
                             .stream()
                             .map(

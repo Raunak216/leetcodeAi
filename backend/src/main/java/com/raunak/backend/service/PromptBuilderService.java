@@ -94,16 +94,22 @@ Journey:
 
 
     public String buildRecommendationPrompt(
-            SkillProfile profile,
-            List<String> solvedQuestions
-    ) {
 
-        return """
+            SkillProfile profile,
+
+            List<String> solvedQuestions,
+
+            boolean interviewScheduled,
+
+            Integer daysRemaining
+    ){
+        StringBuilder prompt=new StringBuilder("""
 You are an expert DSA mentor.
 
 Analyze the user's profile.
 
 Recommend 10 LeetCode questions.
+
 
 Rules:
 
@@ -145,7 +151,26 @@ Reasoning Profile:
 Previously Solved Questions:
 """
 
-                + solvedQuestions;
+                + solvedQuestions);
+        if(interviewScheduled){
+
+            prompt.append(
+
+                    "\nInterview in "
+
+                            + daysRemaining
+
+                            + " days."
+            );
+
+        }else{
+
+            prompt.append(
+
+                    "\nNo interview scheduled. Focus on long-term mastery."
+            );
+        }
+        return prompt.toString();
     }
 
     public String buildCompanyRecommendationPrompt(

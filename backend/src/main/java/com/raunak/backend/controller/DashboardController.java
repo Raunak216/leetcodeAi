@@ -1,11 +1,10 @@
 package com.raunak.backend.controller;
 
 import com.raunak.backend.dto.DashboardResponse;
+import com.raunak.backend.security.AuthUser;
 import com.raunak.backend.service.DashboardService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -16,18 +15,19 @@ public class DashboardController {
     public DashboardController(
             DashboardService dashboardService
     ) {
-        this.dashboardService =
-                dashboardService;
+        this.dashboardService = dashboardService;
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping
     public DashboardResponse getDashboard(
-            @PathVariable
-            int userId
+            Authentication authentication
     ) {
-        return dashboardService
-                .getDashboard(
-                        userId
-                );
+
+        AuthUser authUser =
+                (AuthUser) authentication.getPrincipal();
+
+        return dashboardService.getDashboard(
+                authUser.getUserId()
+        );
     }
 }
