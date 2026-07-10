@@ -45,7 +45,14 @@ export default function GeneratingState() {
             <motion.div
               key={step}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{
+                rotate: 360,
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 2,
+                ease: "linear",
+              }}
               className="flex items-center gap-4"
             >
               {index < currentStep ? (

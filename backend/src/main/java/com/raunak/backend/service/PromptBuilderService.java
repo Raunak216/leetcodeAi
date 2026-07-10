@@ -108,7 +108,7 @@ You are an expert DSA mentor.
 
 Analyze the user's profile.
 
-Recommend 10 LeetCode questions.
+Recommend 5 LeetCode questions.
 
 
 Rules:
@@ -119,14 +119,31 @@ Rules:
 4. Return ONLY valid JSON.
 5. Use real LeetCode question titles.
 
-Return JSON:
+Return ONLY valid JSON.
 
 {
-  "recommendedQuestions":[
-    "Question Name"
-  ],
-  "reasoning":"..."
+  "questions":[
+    {
+      "title":"Two Sum",
+      "slug":"two-sum",
+      "difficulty":"Easy",
+      "topics":[
+        "Arrays",
+        "Hash Map"
+      ],
+      "reason":"Why this question is recommended.",
+      "estimatedTime":"15-20 min"
+    }
+  ]
 }
+Difficulty must be EXACTLY one of:
+Easy
+Medium
+Hard
+
+Slug must be the official LeetCode slug.
+Example:
+Two Sum -> two-sum
 
 DSA Profile:
 """
@@ -197,7 +214,7 @@ Inputs:
 
 Rules:
 
-1. Recommend EXACTLY 10 questions.
+1. Recommend EXACTLY 5 questions.
 2. Avoid already solved questions.
 3. Improve weak skills.
 4. Increase topic breadth.
@@ -206,14 +223,33 @@ Rules:
 7. Prioritize interview success.
 8. Return ONLY valid JSON.
 
-Return JSON:
+
+
+Return ONLY valid JSON.
 
 {
-  "recommendedQuestions":[
-      "Question Name"
-  ],
-  "reasoning":"..."
+  "questions":[
+    {
+      "title":"Two Sum",
+      "slug":"two-sum",
+      "difficulty":"Easy",
+      "topics":[
+        "Arrays",
+        "Hash Map"
+      ],
+      "reason":"Why this question is recommended.",
+      "estimatedTime":"15-20 min"
+    }
+  ]
 }
+Difficulty must be EXACTLY one of:
+Easy
+Medium
+Hard
+
+Slug must be the official LeetCode slug.
+Example:
+Two Sum -> two-sum
 
 Target Company:
 """

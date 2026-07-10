@@ -14,22 +14,16 @@ import {
   generateGeneralRecommendation,
   generateCompanyRecommendation,
 } from "@/services/recommendation";
+
+import { RecommendationResponse } from "@/types/Recommendation";
+
 export default function DashboardPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "generated">(
     "idle",
   );
 
-  useEffect(() => {
-    if (status === "loading") {
-      const timer = setTimeout(() => {
-        setStatus("generated");
-      }, 2200);
-
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
-  const [recommendation, setRecommendation] = useState<any>(null);
-
+  const [recommendation, setRecommendation] =
+    useState<RecommendationResponse | null>(null);
   const handleGenerate = async (data: any) => {
     setStatus("loading");
 

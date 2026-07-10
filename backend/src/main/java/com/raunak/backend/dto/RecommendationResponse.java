@@ -9,6 +9,5 @@ import java.util.List;
 @Setter
 public class RecommendationResponse {
 
-    private List<String> recommendedQuestions;
-    private String reasoning;
+    private List<RecommendedQuestion> questions;
 }

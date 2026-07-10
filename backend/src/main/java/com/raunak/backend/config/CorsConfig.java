@@ -20,7 +20,9 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(
                 List.of(
-                        frontendUrl                )
+                        frontendUrl,
+                        "https://leetcode.com"
+                )
         );
 
 

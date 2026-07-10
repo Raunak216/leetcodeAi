@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import { RecommendationResponse } from "@/types/Recommendation";
 
 export async function generateGeneralRecommendation(body: {
   interviewScheduled: boolean;
@@ -14,5 +15,5 @@ export async function generateCompanyRecommendation(body: {
 }) {
   const response = await api.post("/recommendations/company", body);
 
-  return response.data;
+  return response.data as RecommendationResponse;
 }

@@ -3,8 +3,9 @@ import { Clock3, ExternalLink } from "lucide-react";
 interface Props {
   index: number;
   title: string;
+  slug: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  topics: readonly string[];
+  topics: string[];
   reason: string;
   time: string;
 }
@@ -12,6 +13,7 @@ interface Props {
 export default function QuestionCard({
   index,
   title,
+  slug,
   difficulty,
   topics,
   reason,
@@ -65,7 +67,16 @@ export default function QuestionCard({
             {time}
           </div>
 
-          <button className="flex items-center gap-2 text-cyan-400">
+          <button
+            onClick={() =>
+              window.open(
+                `https://leetcode.com/problems/${slug}`,
+
+                "_blank",
+              )
+            }
+            className="flex items-center gap-2 text-cyan-400 transition hover:text-cyan-300"
+          >
             Solve
             <ExternalLink size={15} />
           </button>
