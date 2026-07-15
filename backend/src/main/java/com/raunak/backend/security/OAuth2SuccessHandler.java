@@ -6,6 +6,7 @@ import com.raunak.backend.model.User;
 import com.raunak.backend.repository.UserRepository;
 import com.raunak.backend.service.UserService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,16 +20,12 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler
         implements AuthenticationSuccessHandler {
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final JwtService jwtService;
+    private final ObjectMapper objectMapper;
     @Value("${frontend.url}")
     private String frontendUrl;
-
-    private final UserRepository userRepository;
-
-    private final UserService userService;
-
-    private final JwtService jwtService;
-
-    private final ObjectMapper objectMapper;
 
     public OAuth2SuccessHandler(
             UserRepository userRepository,
@@ -45,7 +42,7 @@ public class OAuth2SuccessHandler
 
         this.objectMapper =
                 objectMapper;
-        this.userService=userService;
+        this.userService = userService;
     }
 
     @Override
@@ -96,29 +93,45 @@ public class OAuth2SuccessHandler
 
         String jwt =
                 jwtService.generateToken(
-                        user.getId()
+                        user
                 );
 
-        AuthResponse authResponse =
-                new AuthResponse(
-                        jwt,
-                        user.getId(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        user.getLeetcodeUsername(),
-                        user.isLeetcodeVerified()
-                );
 
-        if(request.getSession(false)!=null){
+        if (request.getSession(false) != null) {
             request.getSession(false).invalidate();
         }
 
         response.setContentType("application/json");
 
+        Cookie cookie =
+                new Cookie(
+                        "algolens_jwt",
+                        jwt
+                );
+
+        cookie.setHttpOnly(
+                true
+        );
+
+        cookie.setSecure(
+                request.isSecure()
+        );
+
+        cookie.setPath(
+                "/"
+        );
+
+        cookie.setMaxAge(
+                60 * 60 * 24 * 30
+        );
+
+        response.addCookie(
+                cookie
+        );
+
         response.sendRedirect(
                 frontendUrl +
-                        "/auth/success?token=" +
-                        jwt
+                        "/auth/success"
         );
     }
 }

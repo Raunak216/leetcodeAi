@@ -1,6 +1,5 @@
 package com.raunak.backend.security;
 
-import com.raunak.backend.model.User;
 import com.raunak.backend.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,6 +10,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 
@@ -37,6 +37,8 @@ public class JwtAuthenticationFilter
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String token = null;
+
         String header =
                 request.getHeader("Authorization");
 
@@ -45,33 +47,88 @@ public class JwtAuthenticationFilter
                         header.startsWith("Bearer ")
         ) {
 
-            String token =
+            token =
                     header.substring(7);
 
-            if (
-                    jwtService.isValid(token)
-            ) {
+        }
 
-                int userId =
-                        jwtService.getUserId(token);
+        if (token == null) {
 
-                if(
-                        userRepository.existsById(userId)
-                ){
+            Cookie[] cookies =
+                    request.getCookies();
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    new AuthUser(userId),
-                                    null,
-                                    AuthorityUtils.NO_AUTHORITIES
-                            );
+            if (cookies != null) {
 
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
+                for (Cookie cookie : cookies) {
+
+                    if (
+                            cookie.getName()
+                                    .equals("algolens_jwt")
+                    ) {
+
+                        token =
+                                cookie.getValue();
+
+                        break;
+                    }
                 }
             }
         }
+
+        if (
+                token != null &&
+                        jwtService.isValid(token)
+        ) {
+
+            int userId =
+                    jwtService.getUserId(token);
+
+            if (
+                    userRepository.existsById(userId)
+            ) {
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                new AuthUser(userId),
+                                null,
+                                AuthorityUtils.NO_AUTHORITIES
+                        );
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
+            }
+        }
+
+        filterChain.doFilter(
+                request,
+                response
+        );
+
+        if (token == null) {
+
+            Cookie[] cookies =
+                    request.getCookies();
+
+            if (cookies != null) {
+
+                for (Cookie cookie : cookies) {
+
+                    if (cookie.getName().equals("algolens_jwt")) {
+
+                        token =
+                                cookie.getValue();
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+        }
+
 
         filterChain.doFilter(
                 request,

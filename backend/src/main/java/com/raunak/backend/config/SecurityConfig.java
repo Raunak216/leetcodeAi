@@ -61,7 +61,10 @@ public class SecurityConfig {
                                         "/import/**"
                                 )
                                 .permitAll()
-
+                                .requestMatchers(
+                                        "/auth/extension-token"
+                                )
+                                .authenticated()
                                 .anyRequest().permitAll()
                 )
 

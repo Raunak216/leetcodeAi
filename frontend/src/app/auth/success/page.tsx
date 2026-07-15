@@ -7,19 +7,41 @@ import { useEffect } from "react";
 export default function AuthSuccessPage() {
   const router = useRouter();
 
-  const params = useSearchParams();
-
+  const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID!;
+  console.log(EXTENSION_ID);
+  console.log(EXTENSION_ID.length);
   useEffect(() => {
     const completeLogin = async () => {
       try {
-        const token = params.get("token");
+        const response = await api.get(
+          "/auth/extension-token",
+
+          {
+            withCredentials: true,
+          },
+        );
+
+        const token = response.data.token;
+
+        if (window.chrome && window.chrome.runtime) {
+          window.chrome.runtime.sendMessage(
+            EXTENSION_ID,
+            {
+              type: "SET_AUTH_TOKEN",
+              token,
+            },
+            () => {
+              if (window.chrome.runtime.lastError) {
+                console.log("Extension not installed");
+              }
+            },
+          );
+        }
 
         if (!token) {
           router.replace("/");
           return;
         }
-
-        localStorage.setItem("token", token);
 
         await api.get("/auth/me");
 
@@ -34,7 +56,7 @@ export default function AuthSuccessPage() {
     };
 
     completeLogin();
-  }, [params, router]);
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#050608] text-white">

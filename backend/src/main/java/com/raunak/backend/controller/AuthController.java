@@ -1,47 +1,76 @@
 package com.raunak.backend.controller;
 
-import com.raunak.backend.dto.auth.AuthMeResponse;
-import com.raunak.backend.model.User;
-import com.raunak.backend.repository.UserRepository;
-import com.raunak.backend.security.AuthUser;
-import org.springframework.security.core.Authentication;
+import com.raunak.backend.security.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
-
-    public AuthController(
-            UserRepository userRepository
-    ){
-        this.userRepository=userRepository;
-    }
-
-    @GetMapping("/me")
-    public AuthMeResponse me(
-            Authentication authentication
+    @GetMapping("/extension-token")
+    public Map<String, String> getToken(
+            HttpServletRequest request
     ) {
 
-        AuthUser authUser =
-                (AuthUser) authentication.getPrincipal();
+        Cookie[] cookies =
+                request.getCookies();
 
-        User user =
-                userRepository
-                        .findById(
-                                authUser.getUserId()
-                        )
-                        .orElseThrow();
+        if (cookies == null) {
+            throw new RuntimeException();
+        }
 
-        return new AuthMeResponse(
-                user.getId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getLeetcodeUsername(),
-                user.isLeetcodeVerified()
+        for (Cookie cookie : cookies) {
+
+            if (cookie.getName().equals("algolens_jwt")) {
+
+                return Map.of(
+
+                        "token",
+
+                        cookie.getValue()
+
+                );
+
+            }
+
+        }
+
+        throw new RuntimeException(
+                "No Cookie"
         );
     }
+
+    @PostMapping("/logout")
+    public void logout(
+            HttpServletResponse response
+    ) {
+
+        Cookie cookie =
+                new Cookie(
+                        "algolens_jwt",
+                        ""
+                );
+
+        cookie.setMaxAge(
+                0
+        );
+
+        cookie.setPath(
+                "/"
+        );
+
+        response.addCookie(
+                cookie
+        );
+
+    }
+
 }

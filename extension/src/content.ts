@@ -512,35 +512,13 @@ window.addEventListener(
                 payload
             );
 
-            try {
+            chrome.runtime.sendMessage({
 
-                const res =
-                    await fetch(
-                        "http://localhost:8080/attempts",
-                        {
-                            method:
-                                "POST",
+                type: "UPLOAD_ATTEMPT",
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
+                payload
 
-                            body:
-                                JSON.stringify(
-                                    payload
-                                )
-                        }
-                    );
-
-                console.log(
-                    await res.json()
-                );
-
-            } catch (err) {
-
-                console.error(err);
-            }
+            });
 
             delete journeys[
                 journey.questionSlug

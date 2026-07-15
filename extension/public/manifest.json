@@ -5,10 +5,16 @@
   "permissions": [
     "storage"
   ],
+  "host_permissions": [
+    "http://localhost:8080/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "action": {
     "default_popup": "index.html"
   },
-
   "content_scripts": [
     {
       "matches": [
@@ -19,7 +25,11 @@
       ]
     }
   ],
-
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:3000/*"
+    ]
+  },
   "web_accessible_resources": [
     {
       "resources": [

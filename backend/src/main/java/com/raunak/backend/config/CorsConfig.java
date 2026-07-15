@@ -9,6 +9,7 @@ import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
     @Value("${frontend.url}")
     private String frontendUrl;
 
@@ -20,11 +21,9 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(
                 List.of(
-                        frontendUrl,
-                        "https://leetcode.com"
+                        frontendUrl
                 )
         );
-
 
         configuration.setAllowedMethods(
                 List.of(
@@ -40,9 +39,7 @@ public class CorsConfig {
                 List.of("*")
         );
 
-        configuration.setAllowCredentials(
-                true
-        );
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

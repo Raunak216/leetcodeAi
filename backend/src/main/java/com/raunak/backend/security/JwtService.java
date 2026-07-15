@@ -1,9 +1,12 @@
 package com.raunak.backend.security;
 
+import com.raunak.backend.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,28 +32,41 @@ public class JwtService {
         );
     }
 
-    public String generateToken(
-            int userId
-    ) {
+    public String generateToken(User user) {
 
         return Jwts.builder()
+
                 .subject(
                         String.valueOf(
-                                userId
+                                user.getId()
                         )
                 )
+
+                .claim(
+                        "email",
+                        user.getEmail()
+                )
+
+                .claim(
+                        "name",
+                        user.getUserName()
+                )
+
                 .issuedAt(
                         new Date()
                 )
+
                 .expiration(
                         new Date(
                                 System.currentTimeMillis()
                                         + 1000L * 60 * 60 * 24 * 30
                         )
                 )
+
                 .signWith(
                         key
                 )
+
                 .compact();
     }
 
@@ -95,5 +111,33 @@ public class JwtService {
 
             return false;
         }
+    }
+
+    public int getUserIdFromRequest(
+            HttpServletRequest request
+    ) {
+
+        Cookie[] cookies =
+                request.getCookies();
+
+        if (cookies == null) {
+            throw new RuntimeException("No Cookie");
+        }
+
+        for (Cookie cookie : cookies) {
+
+            if (cookie.getName().equals("algolens_jwt")) {
+
+                return getUserId(
+                        cookie.getValue()
+                );
+
+            }
+
+        }
+
+        throw new RuntimeException(
+                "JWT Cookie Missing"
+        );
     }
 }
