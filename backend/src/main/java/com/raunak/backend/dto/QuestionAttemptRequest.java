@@ -18,5 +18,5 @@ public class QuestionAttemptRequest {
     private Integer runtime;
     private Integer memory;
     private String journeyJson;
-    private int userId;
+    
 }

@@ -101,7 +101,6 @@ public class OAuth2SuccessHandler
             request.getSession(false).invalidate();
         }
 
-        response.setContentType("application/json");
 
         Cookie cookie =
                 new Cookie(

@@ -10,4 +10,5 @@ export const env = {
   frontendUrl: useProduction
     ? process.env.NEXT_PUBLIC_PROD_FRONTEND!
     : process.env.NEXT_PUBLIC_LOCAL_FRONTEND!,
+  EXTENSION_ID: process.env.NEXT_PUBLIC_EXTENSION_ID!,
 };

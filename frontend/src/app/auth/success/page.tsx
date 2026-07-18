@@ -1,65 +1,40 @@
 "use client";
-
 import api from "@/lib/api";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { env } from "@/config/env";
 
 export default function AuthSuccessPage() {
   const router = useRouter();
 
-  const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID!;
-  console.log(EXTENSION_ID);
-  console.log(EXTENSION_ID.length);
+  const EXTENSION_ID = env.EXTENSION_ID;
+
   useEffect(() => {
-    const completeLogin = async () => {
-      try {
-        const response = await api.get(
-          "/auth/extension-token",
+    async function login() {
+      await api.get("/auth/me");
+
+      const { data } = await api.get("/auth/extension-token");
+
+      if (window.chrome?.runtime) {
+        window.chrome.runtime.sendMessage(
+          EXTENSION_ID!,
 
           {
-            withCredentials: true,
+            type: "SET_AUTH_TOKEN",
+
+            token: data.token,
           },
         );
-
-        const token = response.data.token;
-
-        if (window.chrome && window.chrome.runtime) {
-          window.chrome.runtime.sendMessage(
-            EXTENSION_ID,
-            {
-              type: "SET_AUTH_TOKEN",
-              token,
-            },
-            () => {
-              if (window.chrome.runtime.lastError) {
-                console.log("Extension not installed");
-              }
-            },
-          );
-        }
-
-        if (!token) {
-          router.replace("/");
-          return;
-        }
-
-        await api.get("/auth/me");
-
-        router.replace("/dashboard");
-      } catch (e) {
-        console.error(e);
-
-        localStorage.removeItem("token");
-
-        router.replace("/");
       }
-    };
 
-    completeLogin();
-  }, [router]);
+      router.replace("/dashboard");
+    }
+
+    login();
+  }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050608] text-white">
+    <div className="flex min-h-screen items-center justify-center text-white">
       Logging you in...
     </div>
   );

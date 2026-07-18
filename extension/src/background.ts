@@ -1,120 +1,110 @@
-import { BACKEND_URL } from "./config";
+import {BACKEND_URL} from "./config";
 
 console.log("AlgoLens Background Started");
+let authToken: string | null = null;
 
-export async function getToken() {
-
-    const data =
-        await chrome.storage.local.get(
-            "authToken"
-        );
-
-    return (
-        data.authToken as string | undefined
-    );
+// Initialize token on startup
+async function initToken() {
+    const data = await chrome.storage.local.get("authToken");
+    if (data.authToken) {
+        authToken = data.authToken as string;
+        console.log("Token restored from storage");
+    }
 }
 
-export async function setToken(
-    token: string | null
-) {
+initToken();
 
-    await chrome.storage.local.set({
-
-        authToken: token
-
-    });
+export async function getToken(): Promise<string | undefined> {
+    const data = await chrome.storage.local.get("authToken");
+    return data.authToken as string | undefined;
 }
-retryPendingAttempts();
+
+export async function setToken(token: string | null) {
+    authToken = token;
+    await chrome.storage.local.set({authToken});
+}
 
 async function savePendingAttempt(payload: any) {
     const data = await chrome.storage.local.get("pendingAttempts");
-
     const pending = (data.pendingAttempts || []) as any[];
-    pending.push(payload);
 
-    await chrome.storage.local.set({
-        pendingAttempts: pending,
-    });
+    const exists = pending.some(
+        (p: any) => p.questionSlug === payload.questionSlug && p.journeyJson === payload.journeyJson
+    );
+
+    if (!exists) {
+        pending.push(payload);
+    }
+
+    await chrome.storage.local.set({pendingAttempts: pending});
 }
 
 async function uploadAttempt(payload: any) {
     try {
-        const token =
-            await getToken();
+        if (!authToken) {
+            authToken = (await getToken()) || null;
+        }
 
-        const res =
-            await fetch(
-                `${BACKEND_URL}/attempts`,
-                {
-                    method:"POST",
-                    headers:{
-                        "Content-Type":"application/json",
-                        Authorization:
-                            `Bearer ${token}`
-                    },
-                    body:JSON.stringify(payload)
-                }
-            );
+        if (!authToken) {
+            console.log("No auth token available, saving pending attempt");
+            await savePendingAttempt(payload);
+            return;
+        }
+
+        const res = await fetch(`${BACKEND_URL}/attempts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.status === 401) {
+            await setToken(null);
+            await savePendingAttempt(payload);
+            return;
+        }
 
         if (!res.ok) {
-
-            console.log(
-                "Status",
-                res.status
-            );
-
-            console.log(
-                "Response",
-                await res.text()
-            );
-
+            console.log("STATUS:", res.status);
+            console.log("BODY:", await res.text());
             throw new Error("Upload Failed");
         }
 
-        console.log(
-            "Attempt Uploaded",
-            await res.json(),
-        );
+        console.log("Attempt Uploaded successfully");
     } catch (e) {
         console.error("Upload Error", e);
-        await savePendingAttempt(payload);    }
-}
-
-chrome.runtime.onMessage.addListener(async (message) => {
-    switch (message.type) {
-        case "UPLOAD_ATTEMPT":
-            await uploadAttempt(message.payload);
-            await retryPendingAttempts();
-            break;
+        await savePendingAttempt(payload);
     }
-});
+}
 
 async function retryPendingAttempts() {
     const data = await chrome.storage.local.get("pendingAttempts");
-
     const pending = (data.pendingAttempts || []) as any[];
     if (!pending.length) return;
 
     const remaining: any[] = [];
 
+    if (!authToken) {
+        authToken = (await getToken()) || null;
+    }
+
     for (const payload of pending) {
         try {
-            const token =
-                await getToken();
+            if (!authToken) {
+                remaining.push(payload);
+                continue;
+            }
 
-            const res =
-                await fetch(
-                    `${BACKEND_URL}/attempts`,
-                    {
-                        method:"POST",
-                        headers:{
-                            "Content-Type":"application/json",
-                            Authorization:
-                                `Bearer ${token}`
-                        },
-                        body:JSON.stringify(payload)
-                    }
-                );
+            const res = await fetch(`${BACKEND_URL}/attempts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`
+                },
+                body: JSON.stringify(payload)
+            });
 
             if (!res.ok) {
                 remaining.push(payload);
@@ -123,23 +113,28 @@ async function retryPendingAttempts() {
             remaining.push(payload);
         }
     }
-
-    await chrome.storage.local.set({
-        pendingAttempts: remaining,
-    });
+    await chrome.storage.local.set({pendingAttempts: remaining});
 }
 
- chrome.runtime.onMessage.addListener((message) => {
-
-    switch (message.type) {
-
-        case "SET_AUTH_TOKEN":
-
-             setToken(
-                message.token
-            );
-
-            break;
+// 1. Internal messages (from content.js / popup)
+chrome.runtime.onMessage.addListener((message) => {
+    console.log("📥 [Background] Internal message received:", message.type);
+    if (message.type === "UPLOAD_ATTEMPT") {
+        console.log("🚀 [Background] Triggering upload attempt with payload:", message.payload);
+        uploadAttempt(message.payload);
     }
+    return true;
+});
 
+// 2. External messages (FROM NEXT.JS FRONTEND)
+chrome.runtime.onMessageExternal.addListener((message) => {
+    console.log("🌍 [Background] External message intercepted:", message);
+    if (message.type === "SET_AUTH_TOKEN") {
+        console.log("🔑 [Background] Found token in external message. Saving...");
+        setToken(message.token).then(() => {
+            console.log("✅ [Background] Token successfully written to storage. Retrying pending syncs.");
+            return retryPendingAttempts();
+        });
+    }
+    return true;
 });

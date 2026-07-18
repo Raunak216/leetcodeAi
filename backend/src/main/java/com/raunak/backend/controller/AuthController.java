@@ -1,9 +1,13 @@
 package com.raunak.backend.controller;
 
+import com.raunak.backend.model.User;
+import com.raunak.backend.repository.UserRepository;
+import com.raunak.backend.security.AuthUser;
 import com.raunak.backend.security.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,38 +18,66 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+
+    public AuthController(
+            JwtService jwtService,
+            UserRepository userRepository
+    ) {
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("/me")
+    public User me() {
+
+        AuthUser authUser =
+                (AuthUser) SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getPrincipal();
+
+        return userRepository
+                .findById(authUser.getUserId())
+                .orElseThrow();
+    }
 
     @GetMapping("/extension-token")
-    public Map<String, String> getToken(
-            HttpServletRequest request
+    public Map<String, String> extensionToken(
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
 
-        Cookie[] cookies =
-                request.getCookies();
-
-        if (cookies == null) {
-            throw new RuntimeException();
-        }
-
-        for (Cookie cookie : cookies) {
-
-            if (cookie.getName().equals("algolens_jwt")) {
-
-                return Map.of(
-
-                        "token",
-
-                        cookie.getValue()
-
+        int userId =
+                jwtService.getUserIdFromRequest(
+                        request
                 );
 
-            }
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow();
 
-        }
+        String jwt = jwtService.generateToken(user);
 
-        throw new RuntimeException(
-                "No Cookie"
+        Cookie cookie = new Cookie(
+                "algolens_jwt",
+                jwt
         );
+
+        cookie.setHttpOnly(true);
+        cookie.setSecure(request.isSecure());
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 30);
+
+        response.addCookie(cookie);
+
+        return Map.of(
+                "token",
+                jwt
+        );
+
     }
 
     @PostMapping("/logout")

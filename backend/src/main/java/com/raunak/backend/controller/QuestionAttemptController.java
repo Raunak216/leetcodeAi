@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/attempts")
 public class QuestionAttemptController {
@@ -17,20 +18,23 @@ public class QuestionAttemptController {
 
         this.questionAttemptService = questionAttemptService;
     }
+
     @PostMapping
     public QuestionAttempt createAttempt(@Valid @RequestBody QuestionAttemptRequest request) {
+        System.out.println("REACHED ATTEMPTS");
         return questionAttemptService.saveAttempt(request);
     }
+
     @GetMapping("/user/{userId}")
     public List<QuestionAttempt> getAttemptsByUser(@PathVariable int userId) {
         return questionAttemptService.getAttemptsByUser(userId);
     }
+
     @GetMapping("/{attemptId}")
     public QuestionAttempt getAttempt(
             @PathVariable
             int attemptId
-    )
-    {
+    ) {
         return questionAttemptService
                 .getAttempt(
                         attemptId

@@ -105,34 +105,5 @@ public class JwtAuthenticationFilter
                 response
         );
 
-        if (token == null) {
-
-            Cookie[] cookies =
-                    request.getCookies();
-
-            if (cookies != null) {
-
-                for (Cookie cookie : cookies) {
-
-                    if (cookie.getName().equals("algolens_jwt")) {
-
-                        token =
-                                cookie.getValue();
-
-                        break;
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-        filterChain.doFilter(
-                request,
-                response
-        );
     }
 }

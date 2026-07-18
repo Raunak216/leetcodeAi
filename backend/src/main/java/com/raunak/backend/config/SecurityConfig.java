@@ -18,7 +18,7 @@ public class SecurityConfig {
     public SecurityConfig(
             OAuth2SuccessHandler successHandler,
             JwtAuthenticationFilter jwtAuthenticationFilter
-    ){
+    ) {
         this.successHandler = successHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -62,10 +62,14 @@ public class SecurityConfig {
                                 )
                                 .permitAll()
                                 .requestMatchers(
-                                        "/auth/extension-token"
+                                        "/auth/me",
+                                        "/auth/extension-token",
+                                        "/attempts/**"
+
                                 )
                                 .authenticated()
-                                .anyRequest().permitAll()
+                                .anyRequest()
+                                .permitAll()
                 )
 
                 .oauth2Login(

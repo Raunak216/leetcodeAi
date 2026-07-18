@@ -1,4 +1,5 @@
-import { diffLines } from "diff";
+import {diffLines} from "diff";
+
 console.log(
     "STORAGE",
     chrome.storage
@@ -88,6 +89,7 @@ async function loadJourneys() {
         );
     }
 }
+
 function extractProblemData() {
 
     const match =
@@ -146,7 +148,6 @@ function startJourney() {
     }
 
 
-
     journeys[
         problem.slug
         ] = {
@@ -178,6 +179,7 @@ function startJourney() {
             ]
     );
 }
+
 function getCurrentJourney() {
 
     const problem =
@@ -190,6 +192,7 @@ function getCurrentJourney() {
         problem.slug
         ];
 }
+
 function buildDiff(
     oldCode?: string,
     newCode?: string
@@ -217,9 +220,7 @@ function buildDiff(
                 "+ " +
                 part.value +
                 "\n";
-        }
-
-        else if (part.removed) {
+        } else if (part.removed) {
 
             result +=
                 "- " +
@@ -345,7 +346,6 @@ window.addEventListener(
         }
 
 
-
         const taskName =
             responseData.task_name;
 
@@ -358,16 +358,14 @@ window.addEventListener(
         ) {
 
             eventType = "RUN";
-        }
-
-        else if (
+        } else if (
             taskName?.includes(
                 "Judge"
             )
         ) {
 
             eventType = "SUBMIT";
-            }
+        }
 
         const problem =
             extractProblemData();
@@ -460,15 +458,12 @@ window.addEventListener(
             "Accepted";
 
 
-
         if (
             accepted &&
             journey
         ) {
 
             const payload = {
-
-                userId: 3,
 
                 questionSlug:
                 journey.questionSlug,
