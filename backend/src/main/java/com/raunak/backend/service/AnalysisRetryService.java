@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@EnableScheduling
-@SpringBootApplication
 @Service
 public class AnalysisRetryService {
 

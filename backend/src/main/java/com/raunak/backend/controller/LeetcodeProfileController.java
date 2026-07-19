@@ -2,9 +2,10 @@ package com.raunak.backend.controller;
 
 import com.raunak.backend.dto.LeetcodeProfileRequest;
 import com.raunak.backend.model.LeetcodeProfile;
-import com.raunak.backend.service.EventService;
+import com.raunak.backend.security.AuthUser;
 import com.raunak.backend.service.LeetcodeProfileService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,14 +18,22 @@ public class LeetcodeProfileController {
     }
 
     @PostMapping
-    public LeetcodeProfile createProfile(@Valid @RequestBody LeetcodeProfileRequest request){
+    public LeetcodeProfile createProfile(@Valid @RequestBody LeetcodeProfileRequest request) {
 
         return leetcodeProfileService.saveProfile(request);
     }
 
-    @GetMapping("/{userId}")
-    public LeetcodeProfile getLeetcodeProfile(@PathVariable int userId){
-        return leetcodeProfileService.getLeetcodeProfile(userId);
+    @GetMapping("/me")
+    public LeetcodeProfile getLeetcodeProfile(
+            Authentication authentication
+    ) {
+
+        AuthUser authUser =
+                (AuthUser) authentication.getPrincipal();
+
+        return leetcodeProfileService.getLeetcodeProfile(
+                authUser.getUserId()
+        );
     }
 
 }

@@ -2,6 +2,7 @@ package com.raunak.backend.config;
 
 import com.raunak.backend.security.JwtAuthenticationFilter;
 import com.raunak.backend.security.OAuth2SuccessHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -40,36 +41,28 @@ public class SecurityConfig {
                                 session.sessionCreationPolicy(
                                         SessionCreationPolicy.STATELESS
                                 )
+                ).exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(
+                                (request, response, authException) ->
+                                        response.sendError(
+                                                HttpServletResponse.SC_UNAUTHORIZED
+                                        )
+                        )
                 )
 
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/login/**",
+                                "/oauth2/**",
+                                "/companies/**"
+                        ).permitAll()
 
-                .authorizeHttpRequests(
-                        auth -> auth
+                        .requestMatchers(
+                                "/import/**"
+                        ).authenticated()
 
-                                .requestMatchers(
-                                        "/login/**",
-                                        "/oauth2/**"
-                                )
-                                .permitAll()
-
-                                .requestMatchers(
-                                        "/companies/**"
-                                )
-                                .permitAll()
-
-                                .requestMatchers(
-                                        "/import/**"
-                                )
-                                .permitAll()
-                                .requestMatchers(
-                                        "/auth/me",
-                                        "/auth/extension-token",
-                                        "/attempts/**"
-
-                                )
-                                .authenticated()
-                                .anyRequest()
-                                .permitAll()
+                        .anyRequest()
+                        .authenticated()
                 )
 
                 .oauth2Login(

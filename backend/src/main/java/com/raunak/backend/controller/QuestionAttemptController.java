@@ -2,8 +2,10 @@ package com.raunak.backend.controller;
 
 import com.raunak.backend.dto.QuestionAttemptRequest;
 import com.raunak.backend.model.QuestionAttempt;
+import com.raunak.backend.security.AuthUser;
 import com.raunak.backend.service.QuestionAttemptService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,19 +27,30 @@ public class QuestionAttemptController {
         return questionAttemptService.saveAttempt(request);
     }
 
-    @GetMapping("/user/{userId}")
-    public List<QuestionAttempt> getAttemptsByUser(@PathVariable int userId) {
-        return questionAttemptService.getAttemptsByUser(userId);
+    @GetMapping("/me")
+    public List<QuestionAttempt> getMyAttempts(
+            Authentication authentication
+    ) {
+
+        AuthUser authUser =
+                (AuthUser) authentication.getPrincipal();
+
+        return questionAttemptService.getAttemptsByUser(
+                authUser.getUserId()
+        );
     }
 
     @GetMapping("/{attemptId}")
     public QuestionAttempt getAttempt(
             @PathVariable
-            int attemptId
+            int attemptId, Authentication authentication
+
     ) {
+        AuthUser authUser =
+                (AuthUser) authentication.getPrincipal();
         return questionAttemptService
                 .getAttempt(
-                        attemptId
+                        attemptId, authUser.getUserId()
                 );
     }
 }

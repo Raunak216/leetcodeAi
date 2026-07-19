@@ -22,8 +22,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await api.get("/auth/me");
       setUser(response.data);
-    } catch (e) {
-      console.error(e);
+    } catch (error: any) {
+      if (error.response?.status !== 401) {
+        console.error(error);
+      }
       setUser(null);
     }
   };

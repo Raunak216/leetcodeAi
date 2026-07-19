@@ -129,10 +129,18 @@ public class QuestionAttemptService {
     }
 
     public QuestionAttempt getAttempt(
-            int attemptId) {
-        return questionAttemptRepository
-                .findById(
-                        attemptId)
-                .orElseThrow();
+            int attemptId,
+            int userId
+    ) {
+        QuestionAttempt attempt =
+                questionAttemptRepository
+                        .findById(attemptId)
+                        .orElseThrow();
+
+        if (attempt.getUser().getId() != userId) {
+            throw new RuntimeException("Forbidden");
+        }
+
+        return attempt;
     }
 }

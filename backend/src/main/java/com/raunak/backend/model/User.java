@@ -29,14 +29,6 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
-    private List<Event> events;
-
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<ContestSession> contestSessions;
-
-    @OneToMany(mappedBy="user")
-    @JsonIgnore
     private List<LeetcodeProfile> profiles;
 
     @OneToOne(mappedBy = "user")
