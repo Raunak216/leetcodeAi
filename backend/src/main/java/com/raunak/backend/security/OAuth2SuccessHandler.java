@@ -112,9 +112,7 @@ public class OAuth2SuccessHandler
                 true
         );
 
-        cookie.setSecure(
-                request.isSecure()
-        );
+        cookie.setSecure(true);
 
         cookie.setPath(
                 "/"

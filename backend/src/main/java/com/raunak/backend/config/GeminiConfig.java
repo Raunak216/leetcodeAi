@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeminiConfig {
 
-    @Value("${gemini.api.key}")
+    @Value("${GEMINI_API_KEY}")
     private String apiKey;
 
     public String getApiKey() {
