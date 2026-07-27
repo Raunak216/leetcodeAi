@@ -102,28 +102,14 @@ public class OAuth2SuccessHandler
         }
 
 
-        Cookie cookie =
-                new Cookie(
-                        "algolens_jwt",
-                        jwt
-                );
-
-        cookie.setHttpOnly(
-                true
-        );
-
-        cookie.setSecure(true);
-
-        cookie.setPath(
-                "/"
-        );
-
-        cookie.setMaxAge(
-                60 * 60 * 24 * 30
-        );
-
-        response.addCookie(
-                cookie
+        response.addHeader(
+                "Set-Cookie",
+                "algolens_jwt=" + jwt +
+                        "; Path=/" +
+                        "; Max-Age=" + (60 * 60 * 24 * 30) +
+                        "; HttpOnly" +
+                        "; Secure" +
+                        "; SameSite=None"
         );
 
         response.sendRedirect(
