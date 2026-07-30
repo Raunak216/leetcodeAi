@@ -1,6 +1,5 @@
 import {BACKEND_URL} from "./config";
 
-console.log("AlgoLens Background Started");
 let authToken: string | null = null;
 
 // Initialize token on startup
@@ -8,7 +7,6 @@ async function initToken() {
     const data = await chrome.storage.local.get("authToken");
     if (data.authToken) {
         authToken = data.authToken as string;
-        console.log("Token restored from storage");
     }
 }
 
@@ -21,7 +19,13 @@ export async function getToken(): Promise<string | undefined> {
 
 export async function setToken(token: string | null) {
     authToken = token;
-    await chrome.storage.local.set({authToken});
+    if (token) {
+        await chrome.storage.local.set({
+            authToken: token
+        });
+    } else {
+        await chrome.storage.local.remove("authToken");
+    }
 }
 
 async function savePendingAttempt(payload: any) {
@@ -46,7 +50,6 @@ async function uploadAttempt(payload: any) {
         }
 
         if (!authToken) {
-            console.log("No auth token available, saving pending attempt");
             await savePendingAttempt(payload);
             return;
         }
@@ -67,14 +70,10 @@ async function uploadAttempt(payload: any) {
         }
 
         if (!res.ok) {
-            console.log("STATUS:", res.status);
-            console.log("BODY:", await res.text());
             throw new Error("Upload Failed");
         }
 
-        console.log("Attempt Uploaded successfully");
     } catch (e) {
-        console.error("Upload Error", e);
         await savePendingAttempt(payload);
     }
 }
@@ -118,23 +117,32 @@ async function retryPendingAttempts() {
 
 // 1. Internal messages (from content.js / popup)
 chrome.runtime.onMessage.addListener((message) => {
-    console.log("📥 [Background] Internal message received:", message.type);
-    if (message.type === "UPLOAD_ATTEMPT") {
-        console.log("🚀 [Background] Triggering upload attempt with payload:", message.payload);
-        uploadAttempt(message.payload);
+    switch (message.type) {
+        case "UPLOAD_ATTEMPT":
+            uploadAttempt(message.payload);
+            break;
+
+        case "LOGOUT":
+            setToken(null);
+            break;
     }
     return true;
 });
 
+
 // 2. External messages (FROM NEXT.JS FRONTEND)
-chrome.runtime.onMessageExternal.addListener((message) => {
-    console.log("🌍 [Background] External message intercepted:", message);
+chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
     if (message.type === "SET_AUTH_TOKEN") {
-        console.log("🔑 [Background] Found token in external message. Saving...");
         setToken(message.token).then(() => {
-            console.log("✅ [Background] Token successfully written to storage. Retrying pending syncs.");
-            return retryPendingAttempts();
+            retryPendingAttempts();
+            sendResponse({success: true});
         });
+        return true;
     }
-    return true;
+    if (message.type === "LOGOUT") {
+        setToken(null).then(() => {
+            sendResponse({success: true});
+        });
+        return true;
+    }
 });

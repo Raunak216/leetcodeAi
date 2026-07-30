@@ -1,11 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "AI Placement Engine",
+  "name": "unSheet",
   "version": "1.0",
+  "description": "Automatically track your LeetCode journey.",
+  "icons": {
+    "16": "logo16.png",
+    "48": "logo48.png",
+    "128": "logo128.png"
+  },
   "permissions": [
     "storage"
   ],
   "host_permissions": [
+    "https://leetcodeai-production.up.railway.app/*",
     "http://localhost:8080/*"
   ],
   "background": {
@@ -13,10 +20,16 @@
     "type": "module"
   },
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "logo16.png",
+      "48": "logo48.png",
+      "128": "logo128.png"
+    }
   },
   "externally_connectable": {
     "matches": [
+      "https://dsafrontend-flax.vercel.app/*",
       "http://localhost:3000/*"
     ]
   },
@@ -36,7 +49,7 @@
         "interceptor.js"
       ],
       "matches": [
-        "<all_urls>"
+        "https://leetcode.com/*"
       ]
     }
   ]

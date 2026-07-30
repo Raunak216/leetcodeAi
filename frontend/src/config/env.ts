@@ -1,5 +1,4 @@
 const useProduction = process.env.NEXT_PUBLIC_USE_PRODUCTION === "true";
-console.log(process.env.NEXT_PUBLIC_LOCAL_BACKEND);
 export const env = {
   isProd: useProduction,
 

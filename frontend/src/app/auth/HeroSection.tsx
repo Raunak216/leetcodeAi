@@ -5,20 +5,22 @@ import Logo from "../../components/common/Logo";
 
 export default function HeroSection() {
   return (
-    <section className="relative z-10 flex flex-col items-center px-5 pt-14">
-      <motion.div
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Logo />
-      </motion.div>
+    <section className="relative z-10 w-full px-5 pt-6 flex flex-col items-center">
+      <div className="w-full  flex items-center justify-start pb-8">
+        <motion.div
+          initial={{ opacity: 0, x: -15 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Logo />
+        </motion.div>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.5 }}
-        className="mt-14 max-w-3xl text-center"
+        className="mt-4 max-w-3xl text-center"
       >
         <h1 className="text-6xl font-bold leading-tight text-white">
           Know exactly what

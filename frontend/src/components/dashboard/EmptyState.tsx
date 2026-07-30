@@ -1,21 +1,27 @@
-import { Target } from "lucide-react";
+"use client";
+
+import { Code2, Terminal, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function EmptyState() {
   return (
-    <div className="flex h-[420px] items-start justify-center pt-28">
-      <div className="text-center">
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-cyan-500/20 bg-cyan-500/10">
-          <Target size={34} className="text-cyan-400" />
-        </div>
+    <div className="flex min-h-[420px] items-center justify-center p-6">
+      <div className="flex flex-col items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-8 max-w-md"
+        >
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Your queue is ready to generate
+          </h2>
 
-        <h2 className="mt-8 text-3xl font-bold">
-          Your queue is ready to generate
-        </h2>
-
-        <p className="mt-5 max-w-md text-lg leading-8 text-white/35">
-          Select your preparation strategy and let AlgoLens build the highest
-          ROI roadmap for your interview.
-        </p>
+          <p className="mt-3 text-base leading-relaxed text-white/40">
+            Select your preparation strategy above to let unSheet build the
+            highest ROI roadmap for your interview.
+          </p>
+        </motion.div>
       </div>
     </div>
   );

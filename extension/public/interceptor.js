@@ -1,5 +1,3 @@
-console.log("INTERCEPTOR LOADED");
-
 const originalFetch = window.fetch;
 
 window.fetch = async (...args) => {
@@ -16,7 +14,8 @@ window.fetch = async (...args) => {
                 args[1].body
             );
 
-        } catch (e) {}
+        } catch (e) {
+        }
 
     }
 
@@ -42,8 +41,7 @@ window.fetch = async (...args) => {
 
             window.postMessage({
 
-                source:
-                    "AI_PLACEMENT_ENGINE",
+                source: "UNSHEET",
 
                 url,
 
@@ -57,7 +55,6 @@ window.fetch = async (...args) => {
 
     } catch (e) {
 
-        console.error(e);
 
     }
 

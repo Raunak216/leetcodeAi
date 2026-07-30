@@ -1,9 +1,9 @@
 import {diffLines} from "diff";
 
-console.log(
-    "STORAGE",
-    chrome.storage
-);
+// console.log(
+//     "STORAGE",
+//     chrome.storage
+// );
 
 const script = document.createElement("script");
 
@@ -14,7 +14,7 @@ script.src = chrome.runtime.getURL(
 (document.head || document.documentElement)
     .appendChild(script);
 
-console.log("AI Placement Engine Loaded");
+// console.log("unSheet loaded");
 
 interface JourneyStep {
     eventType: string;
@@ -83,10 +83,10 @@ async function loadJourneys() {
             journeys[slug].steps ??= [];
         }
 
-        console.log(
-            "Journeys Restored",
-            journeys
-        );
+        // console.log(
+        //     "Journeys Restored",
+        //     journeys
+        // );
     }
 }
 
@@ -156,7 +156,7 @@ function startJourney() {
         problem.slug,
 
         title:
-        problem.slug,
+        problem.title,
 
         difficulty:
         problem.difficulty,
@@ -172,12 +172,12 @@ function startJourney() {
         steps: []
     };
 
-    console.log(
-        "Journey Started",
-        journeys[
-            problem.slug
-            ]
-    );
+    // console.log(
+    //     "Journey Started",
+    //     journeys[
+    //         problem.slug
+    //         ]
+    // );
 }
 
 function getCurrentJourney() {
@@ -264,10 +264,7 @@ window.addEventListener(
             window
         ) return;
 
-        if (
-            event.data?.source !==
-            "AI_PLACEMENT_ENGINE"
-        ) return;
+        if (event.data?.source !== "UNSHEET") return;
 
         const url =
             event.data.url;
@@ -292,11 +289,6 @@ window.addEventListener(
 
             const currentCode =
                 requestBody?.typed_code ?? "";
-            // console.log(
-            //     "CURRENT CODE",
-            //     currentCode.length,
-            //     currentCode.substring(0, 50)
-            // );
 
             const journey =
                 getCurrentJourney();
@@ -310,11 +302,7 @@ window.addEventListener(
                     journey.lastCode,
                     currentCode
                 );
-            //
-            // console.log(
-            //     "DIFF GENERATED",
-            //     codeDiff
-            // );
+
 
             journey.pendingDiff =
                 codeDiff;
@@ -331,9 +319,9 @@ window.addEventListener(
             await saveJourneys();
 
 
-            console.log(
-                "RUN STARTED"
-            );
+            // console.log(
+            //     "RUN STARTED"
+            // );
 
             return;
         }
@@ -440,12 +428,12 @@ window.addEventListener(
             "";
 
         await saveJourneys();
-        console.log(
-            "TOTAL STEPS",
-            journey.steps.length,
-            "STEP ADDED",
-            step
-        );
+        // console.log(
+        //     "TOTAL STEPS",
+        //     journey.steps.length,
+        //     "STEP ADDED",
+        //     step
+        // );
 
         const accepted =
 
@@ -502,10 +490,10 @@ window.addEventListener(
                     })
             };
 
-            console.log(
-                "SENDING JOURNEY",
-                payload
-            );
+            // console.log(
+            //     "SENDING JOURNEY",
+            //     payload
+            // );
 
             chrome.runtime.sendMessage({
 
