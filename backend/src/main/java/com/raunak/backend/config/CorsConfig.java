@@ -22,7 +22,7 @@ public class CorsConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         frontendUrl,
-                        "chrome-extension://jjldklblhakemhjhjlpcnjaljdajghid"
+                        "chrome-extension://cnfpjafdoegkfnbhnejcjdbppddccppg"
                 )
         );
 
