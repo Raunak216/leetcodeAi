@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CompanyRecommendationRequest {
 
-    private int userId;
+    private Integer userId;
 
     private String company;
 

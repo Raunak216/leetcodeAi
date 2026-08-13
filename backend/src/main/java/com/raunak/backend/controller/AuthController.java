@@ -62,7 +62,7 @@ public class AuthController {
         String jwt = jwtService.generateToken(user);
 
         Cookie cookie = new Cookie(
-                "algolens_jwt",
+                "unSheet",
                 jwt
         );
 
@@ -87,7 +87,7 @@ public class AuthController {
 
         Cookie cookie =
                 new Cookie(
-                        "algolens_jwt",
+                        "unSheet",
                         ""
                 );
 

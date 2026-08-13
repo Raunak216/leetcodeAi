@@ -126,7 +126,7 @@ public class JwtService {
 
         for (Cookie cookie : cookies) {
 
-            if (cookie.getName().equals("algolens_jwt")) {
+            if (cookie.getName().equals("unSheet")) {
 
                 return getUserId(
                         cookie.getValue()

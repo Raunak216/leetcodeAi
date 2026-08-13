@@ -104,7 +104,7 @@ public class OAuth2SuccessHandler
 
         response.addHeader(
                 "Set-Cookie",
-                "algolens_jwt=" + jwt +
+                "unSheet=" + jwt +
                         "; Path=/" +
                         "; Max-Age=" + (60 * 60 * 24 * 30) +
                         "; HttpOnly" +

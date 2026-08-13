@@ -29,11 +29,6 @@ export default function Sidebar() {
       </div>
 
       <div className="border-t border-white/10 p-3">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition hover:bg-white/5">
-          <Settings size={18} />
-          Settings
-        </button>
-
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition hover:bg-white/5 hover:text-red-400"

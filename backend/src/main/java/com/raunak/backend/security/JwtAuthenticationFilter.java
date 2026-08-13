@@ -62,8 +62,7 @@ public class JwtAuthenticationFilter
                 for (Cookie cookie : cookies) {
 
                     if (
-                            cookie.getName()
-                                    .equals("algolens_jwt")
+                            cookie.getName().equals("unSheet")
                     ) {
 
                         token =
@@ -76,16 +75,10 @@ public class JwtAuthenticationFilter
         }
 
         if (
-                token != null &&
-                        jwtService.isValid(token)
+                token != null && jwtService.isValid(token)
         ) {
-
-            int userId =
-                    jwtService.getUserId(token);
-
-            if (
-                    userRepository.existsById(userId)
-            ) {
+            int userId = jwtService.getUserId(token);
+            if (userRepository.existsById(userId)) {
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -94,16 +87,11 @@ public class JwtAuthenticationFilter
                                 AuthorityUtils.NO_AUTHORITIES
                         );
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
-        filterChain.doFilter(
-                request,
-                response
-        );
+        filterChain.doFilter(request, response);
 
     }
 }

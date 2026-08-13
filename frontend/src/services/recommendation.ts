@@ -13,7 +13,10 @@ export async function generateCompanyRecommendation(body: {
   company: string;
   daysRemaining: number;
 }) {
-  const response = await api.post("/recommendations/company", body);
+  const response = await api.post("/recommendations/company", {
+    company: body.company,
+    daysRemaining: Number(body.daysRemaining) || 0,
+  });
 
   return response.data as RecommendationResponse;
 }

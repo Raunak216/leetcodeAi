@@ -59,66 +59,32 @@ public class QuestionAttemptService {
         SkillProfile profile = skillProfileService.getOrCreateProfile(user);
 
         QuestionAttempt attempt = new QuestionAttempt();
+        attempt.setQuestionSlug(request.getQuestionSlug());
+        attempt.setTitle(request.getTitle());
+        attempt.setDifficulty(request.getDifficulty());
+        attempt.setLanguage(request.getLanguage());
+        attempt.setRuntime(request.getRuntime());
+        attempt.setMemory(request.getMemory());
+        attempt.setJourneyJson(request.getJourneyJson());
+        attempt.setCreatedAt(LocalDateTime.now());
+        attempt.setUser(user);
 
-        attempt.setQuestionSlug(
-                request.getQuestionSlug());
-
-        attempt.setTitle(
-                request.getTitle());
-
-        attempt.setDifficulty(
-                request.getDifficulty());
-
-        attempt.setLanguage(
-                request.getLanguage());
-
-        attempt.setRuntime(
-                request.getRuntime());
-
-        attempt.setMemory(
-                request.getMemory());
-
-        attempt.setJourneyJson(
-                request.getJourneyJson());
-        attempt.setCreatedAt(
-                LocalDateTime.now());
-        attempt.setUser(
-                user);
-
-        QuestionAttempt saved = questionAttemptRepository.save(
-                attempt);
-
+        QuestionAttempt saved = questionAttemptRepository.save(attempt);
         try {
+            AnalysisResult result = geminiService.analyze(saved);
+            analysisMapperService.applyAnalysis(saved.getUser().getId(), result);
+            saved.setAiResponseJson(objectMapper.writeValueAsString(result));
 
-            AnalysisResult result = geminiService.analyze(
-                    saved);
+            saved.setAnalysisCompleted(true);
 
-            analysisMapperService.applyAnalysis(
-                    saved.getUser().getId(),
-                    result);
-
-            saved.setAiResponseJson(
-                    objectMapper.writeValueAsString(
-                            result));
-
-            saved.setAnalysisCompleted(
-                    true);
-
-            questionAttemptRepository.save(
-                    saved);
+            questionAttemptRepository.save(saved);
 
         } catch (Exception e) {
 
             e.printStackTrace();
-
-            saved.setAnalysisCompleted(
-                    false);
-
-            saved.setAnalysisRetryCount(
-                    saved.getAnalysisRetryCount() + 1);
-
-            questionAttemptRepository.save(
-                    saved);
+            saved.setAnalysisCompleted(false);
+            saved.setAnalysisRetryCount(saved.getAnalysisRetryCount() + 1);
+            questionAttemptRepository.save(saved);
         }
 
         return saved;
@@ -133,9 +99,7 @@ public class QuestionAttemptService {
             int userId
     ) {
         QuestionAttempt attempt =
-                questionAttemptRepository
-                        .findById(attemptId)
-                        .orElseThrow();
+                questionAttemptRepository.findById(attemptId).orElseThrow();
 
         if (attempt.getUser().getId() != userId) {
             throw new RuntimeException("Forbidden");

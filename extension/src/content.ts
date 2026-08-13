@@ -41,23 +41,18 @@ interface CurrentJourney {
     steps: JourneyStep[];
 }
 
-let journeys: Record<
-    string,
-    CurrentJourney
-> = {};
+let journeys: Record<string, CurrentJourney> = {};
 
 let currentPath = location.pathname;
 let latestLanguage = "";
 
 async function saveJourneys() {
-
     await chrome.storage.local.set({
         journeys
     });
 }
 
 async function loadJourneys() {
-
     const data =
         await chrome.storage.local.get(
             "journeys"
