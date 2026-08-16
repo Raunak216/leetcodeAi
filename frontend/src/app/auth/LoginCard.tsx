@@ -4,6 +4,7 @@ import HowItWorks from "./HowItWorks";
 import { env } from "@/config/env";
 
 export default function LoginCard() {
+  const privacyPage = `${env.frontendUrl}/privacy`;
   const handleLogin = () => {
     window.location.href = `${env.backendUrl}/oauth2/authorization/google`;
   };
@@ -25,7 +26,11 @@ export default function LoginCard() {
       <HowItWorks />
 
       <p className="mt-8 text-center text-xs text-white/20">
-        By continuing you agree to our Terms & Privacy Policy.
+        By continuing you agree to our{" "}
+        <a href={privacyPage} className="hover hover:text-cyan-500">
+          Terms & Privacy Policy
+        </a>
+        .
       </p>
     </motion.div>
   );

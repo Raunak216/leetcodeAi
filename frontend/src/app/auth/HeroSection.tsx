@@ -31,7 +31,7 @@ export default function HeroSection() {
         </h1>
 
         <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/35">
-          Our system analyzes your coding history across 120+ DSA topics and
+          Our system analyzes your coding history across 100+ DSA topics and
           recommends the highest ROI questions to maximize interview
           preparation.
         </p>
