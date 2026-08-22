@@ -13,8 +13,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -29,8 +29,5 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
-    private List<LeetcodeProfile> profiles;
-
-    @OneToOne(mappedBy = "user")
-    private SkillProfile skillProfile;
+    private List<UserSkill> skills;
 }

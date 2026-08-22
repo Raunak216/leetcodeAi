@@ -1,362 +1,416 @@
 package com.raunak.backend.service;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.raunak.backend.DsaSkillTopics;
-import com.raunak.backend.EngineeringSkillTopics;
-import com.raunak.backend.ReasoningSkillTopics;
-import com.raunak.backend.dto.SkillValue;
-import com.raunak.backend.enums.SkillSignal;
-import com.raunak.backend.model.SkillProfile;
+import com.raunak.backend.ProblemSolvingSignals;
+import com.raunak.backend.dto.AiAnalysisResponse;
+import com.raunak.backend.model.QuestionAttempt;
 import com.raunak.backend.model.User;
-import com.raunak.backend.repository.SkillProfileRepository;
+import com.raunak.backend.model.UserSkill;
+import com.raunak.backend.repository.UserSkillRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Service
-    public class SkillProfileService {
+public class SkillProfileService {
 
-        private final SkillProfileRepository skillProfileRepository;
-        private final ObjectMapper objectMapper;
+    private static final double DEFAULT_RATING = 50.0;
 
-        public SkillProfileService(
-                SkillProfileRepository skillProfileRepository,
-                ObjectMapper objectMapper
-        )
-        {
-            this.skillProfileRepository =
-                    skillProfileRepository;
+    private static final double DECAY_FLOOR = 30.0;
 
-            this.objectMapper =
-                    objectMapper;
-        }
-    private String createInitialDsa() {
+    private static final double HALF_LIFE_DAYS = 14.0;
 
-        try {
+    private static final double ELO_K = 8.0;
 
-            Map<String, SkillValue> skills =
-                    new HashMap<>();
+    private static final double DIFFICULTY_SCALE = 40.0;
 
-            for (
-                    String topic :
-                    DsaSkillTopics.ALL_TOPICS
-            ) {
+    private static final double MAX_PENALTY = 0.50;
 
-                skills.put(
-                        topic,
-                        new SkillValue(
-                                null,
-                                0
-                        )
-                );
-            }
+    private final UserSkillRepository userSkillRepository;
 
-            return objectMapper
-                    .writeValueAsString(
-                            skills
-                    );
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(e);
-        }
-    }
-    private String createInitialEngineering() {
-
-        try {
-
-            Map<String, SkillValue> skills =
-                    new HashMap<>();
-
-            for (
-                    String topic :
-                    EngineeringSkillTopics.ALL_TOPICS
-            ) {
-
-                skills.put(
-                        topic,
-                        new SkillValue(
-                                null,
-                                0
-                        )
-                );
-            }
-
-            return objectMapper
-                    .writeValueAsString(
-                            skills
-                    );
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(e);
-        }
-    }
-    private String createInitialReasoning() {
-
-        try {
-
-            Map<String, SkillValue> skills =
-                    new HashMap<>();
-
-            for (
-                    String topic :
-                    ReasoningSkillTopics.ALL_TOPICS
-            ) {
-
-                skills.put(
-                        topic,
-                        new SkillValue(
-                                null,
-                                0
-                        )
-                );
-            }
-
-            return objectMapper
-                    .writeValueAsString(
-                            skills
-                    );
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(e);
-        }
-    }
-        private double getSignalValue(
-                SkillSignal signal
-        ) {
-
-            return switch (signal) {
-
-                case EFFICIENT_SOLVE -> 100;
-
-                case CLEAN_SOLVE -> 85;
-
-                case STRUGGLE -> 50;
-
-                case MISTAKE -> 20;
-            };
-        }
-
-        private double updateMastery(
-                Double mastery,
-                int attempts,
-                double signal
-        ) {
-
-            if (mastery == null) {
-                return signal;
-            }
-
-            double alpha =
-                    Math.max(
-                            1.0 / (attempts + 1),
-                            0.2
-                    );
-
-            return mastery +
-                    alpha *
-                            (signal - mastery);
-        }
-
-    private String getJsonForTopic(
-            SkillProfile profile,
-            String topic
+    public SkillProfileService(
+            UserSkillRepository userSkillRepository
     ) {
-
-        if (
-                DsaSkillTopics.contains(
-                        topic
-                )
-        ) {
-            return profile.getDsa();
-        }
-
-        if (
-                EngineeringSkillTopics.contains(
-                        topic
-                )
-        ) {
-            return profile.getEngineering();
-        }
-
-        return profile.getReasoning();
+        this.userSkillRepository =
+                userSkillRepository;
     }
 
-    private void setJsonForTopic(
-            SkillProfile profile,
-            String topic,
-            String json
-    ) {
+    public List<UserSkill> getSkills(int userId) {
 
-        if (
-                DsaSkillTopics.contains(
-                        topic
-                )
-        ) {
+        List<UserSkill> skills =
+                userSkillRepository.findByUserId(userId);
 
-            profile.setDsa(
-                    json
+        Set<String> existingSkills =
+                new HashSet<>();
+
+        for (UserSkill skill : skills) {
+            existingSkills.add(skill.getSkill());
+        }
+
+        List<UserSkill> newSkills =
+                new ArrayList<>();
+
+        for (String skill :
+                DsaSkillTopics.ALL_TOPICS) {
+
+            if (!existingSkills.contains(skill)) {
+
+                newSkills.add(
+                        createSkill(skill)
+                );
+            }
+        }
+
+        for (String skill :
+                ProblemSolvingSignals.ALL_SIGNALS) {
+
+            if (!existingSkills.contains(skill)) {
+
+                newSkills.add(
+                        createSkill(skill)
+                );
+            }
+        }
+
+        if (!newSkills.isEmpty()) {
+
+            for (UserSkill skill : newSkills) {
+
+                User user = new User();
+                user.setId(userId);
+
+                skill.setUser(user);
+            }
+
+            userSkillRepository.saveAll(
+                    newSkills
             );
 
+            skills.addAll(newSkills);
+        }
+
+        skills.sort(
+                (a, b) ->
+                        a.getSkill()
+                                .compareTo(
+                                        b.getSkill()
+                                )
+        );
+
+        return skills;
+    }
+
+    private UserSkill createSkill(
+            String skillName
+    ) {
+
+        UserSkill skill =
+                new UserSkill();
+
+        skill.setSkill(
+                skillName
+        );
+
+        skill.setRating(
+                DEFAULT_RATING
+        );
+
+        skill.setAttempts(
+                0
+        );
+
+        skill.setLastPracticedAt(
+                null
+        );
+
+        return skill;
+    }
+
+    @Transactional
+    public void applyAnalysis(
+            QuestionAttempt attempt,
+            AiAnalysisResponse analysis
+    ) {
+
+        if (analysis == null) {
+            throw new RuntimeException(
+                    "Empty AI analysis"
+            );
+        }
+
+        if (analysis.getTags() == null) {
             return;
         }
 
-        if (
-                EngineeringSkillTopics.contains(
-                        topic
-                )
-        ) {
+        double performance =
+                calculatePerformance(
+                        attempt,
+                        analysis.getScore()
+                );
 
-            profile.setEngineering(
-                    json
+        List<String> processedTags =
+                new ArrayList<>();
+
+        int tagCount = 0;
+
+        for (String rawTag :
+                analysis.getTags()) {
+
+            if (tagCount >= 3) {
+                break;
+            }
+
+            if (rawTag == null) {
+                continue;
+            }
+
+            String tag =
+                    rawTag
+                            .trim()
+                            .toLowerCase();
+
+            if (!isValidSkill(tag)) {
+                continue;
+            }
+
+            if (processedTags.contains(tag)) {
+                continue;
+            }
+
+            updateSkill(
+                    attempt,
+                    tag,
+                    performance
             );
 
-            return;
-        }
+            processedTags.add(tag);
 
-        profile.setReasoning(
-                json
+            tagCount++;
+        }
+    }
+
+    private void updateSkill(
+            QuestionAttempt attempt,
+            String skillName,
+            double performance
+    ) {
+
+        int userId =
+                attempt
+                        .getUser()
+                        .getId();
+
+        UserSkill skill =
+                userSkillRepository
+                        .findByUserIdAndSkill(
+                                userId,
+                                skillName
+                        )
+                        .orElseGet(() -> {
+
+                            UserSkill newSkill =
+                                    createSkill(
+                                            skillName
+                                    );
+
+                            User user =
+                                    new User();
+
+                            user.setId(
+                                    userId
+                            );
+
+                            newSkill.setUser(
+                                    user
+                            );
+
+                            return newSkill;
+                        });
+
+        double currentRating =
+                skill.getRating();
+
+        double decayedRating =
+                calculateDecay(
+                        currentRating,
+                        skill.getLastPracticedAt()
+                );
+
+        double difficulty =
+                getDifficultyRating(
+                        attempt.getDifficulty()
+                );
+
+        double expected =
+                calculateExpected(
+                        difficulty,
+                        decayedRating
+                );
+
+        double newRating =
+                decayedRating
+                        + ELO_K
+                        * (performance - expected);
+
+        newRating =
+                clamp(
+                        newRating,
+                        0.0,
+                        100.0
+                );
+
+        skill.setRating(
+                newRating
+        );
+
+        skill.setAttempts(
+                skill.getAttempts() + 1
+        );
+
+        skill.setLastPracticedAt(
+                LocalDateTime.now()
+        );
+
+        userSkillRepository.save(
+                skill
         );
     }
 
-        public void applySignal(
-                int userId,
-                String topic,
-                SkillSignal signal
-        ) {
+    private double calculatePerformance(
+            QuestionAttempt attempt,
+            double aiScore
+    ) {
 
-            try {
-
-                SkillProfile profile =
-                        skillProfileRepository
-                                .findByUserId(userId)
-                                .orElseThrow();
-
-                Map<String, SkillValue> current =
-                        objectMapper.readValue(
-                                getJsonForTopic(
-                                        profile,
-                                        topic
-                                ),
-                                new TypeReference<
-                                        Map<String, SkillValue>
-                                        >() {}
-                        );
-
-                SkillValue skillValue =
-                        current.get(topic);
-
-                if (skillValue == null) {
-
-                    skillValue =
-                            new SkillValue(
-                                    null,
-                                    0
-                            );
-                }
-
-                double signalValue =
-                        getSignalValue(signal);
-
-                Double mastery =
-                        updateMastery(
-                                skillValue.getMastery(),
-                                skillValue.getAttempts(),
-                                signalValue
-                        );
-
-                skillValue.setMastery(
-                        mastery
+        double score =
+                clamp(
+                        aiScore,
+                        0.0,
+                        1.0
                 );
 
-                skillValue.setAttempts(
-                        skillValue.getAttempts() + 1
+        int syntaxErrors =
+                attempt.getCompileErrors() == null
+                        ? 0
+                        : attempt.getCompileErrors();
+
+        int logicFailures =
+                attempt.getLogicFailures() == null
+                        ? 0
+                        : attempt.getLogicFailures();
+
+        double penalty =
+                Math.min(
+                        MAX_PENALTY,
+                        0.10 * logicFailures
+                                + 0.02 * syntaxErrors
                 );
 
-                current.put(
-                        topic,
-                        skillValue
-                );
+        return Math.max(
+                0.10,
+                score - penalty
+        );
+    }
 
-                String updatedJson =
-                        objectMapper.writeValueAsString(
-                                current
-                        );
+    private double calculateDecay(
+            double rating,
+            LocalDateTime lastPracticedAt
+    ) {
 
-                setJsonForTopic(
-                        profile,
-                        topic,
-                        updatedJson
-                );
-
-                skillProfileRepository.save(
-                        profile
-                );
-
-            } catch (Exception e) {
-
-                throw new RuntimeException(e);
-            }
+        if (lastPracticedAt == null) {
+            return rating;
         }
 
-    public SkillProfile getOrCreateProfile(
-            User user
+        LocalDateTime now =
+                LocalDateTime.now();
+
+        long seconds =
+                Duration.between(
+                        lastPracticedAt,
+                        now
+                ).getSeconds();
+
+        if (seconds <= 0) {
+            return rating;
+        }
+
+        double daysInactive =
+                seconds / 86400.0;
+
+        double decay =
+                Math.pow(
+                        2,
+                        -daysInactive
+                                / HALF_LIFE_DAYS
+                );
+
+        return DECAY_FLOOR
+                + (rating - DECAY_FLOOR)
+                * decay;
+    }
+
+    private double calculateExpected(
+            double difficulty,
+            double rating
     ) {
 
-        return skillProfileRepository
-                .findByUserId(
-                        user.getId()
-                )
-                .orElseGet(() -> {
-
-                    SkillProfile profile =
-                            new SkillProfile();
-
-                    profile.setUser(
-                            user
-                    );
-
-                    profile.setDsa(
-                            createInitialDsa()
-                    );
-
-                    profile.setEngineering(
-                            createInitialEngineering()
-                    );
-
-                    profile.setReasoning(
-                            createInitialReasoning()
-                    );
-
-                    return skillProfileRepository
-                            .save(profile);
-                });
+        return 1.0 /
+                (
+                        1.0 +
+                                Math.pow(
+                                        10,
+                                        (difficulty - rating)
+                                                / DIFFICULTY_SCALE
+                                )
+                );
     }
-    public boolean isValidTopic(
-            String topic
+
+    private double getDifficultyRating(
+            String difficulty
     ) {
 
-        return
-                DsaSkillTopics.contains(topic)
+        if (difficulty == null) {
+            return 50.0;
+        }
 
-                        ||
+        if (difficulty.equalsIgnoreCase("Easy")) {
+            return 30.0;
+        }
 
-                        EngineeringSkillTopics.contains(topic)
+        if (difficulty.equalsIgnoreCase("Hard")) {
+            return 70.0;
+        }
 
-                        ||
-
-                        ReasoningSkillTopics.contains(topic);
+        return 50.0;
     }
-    public SkillProfile getProfile(
-            int userId
-    )
-    {
-        return skillProfileRepository
-                .findByUserId(
-                        userId
-                )
-                .orElseThrow();
+
+    private boolean isValidSkill(
+            String skill
+    ) {
+
+        return DsaSkillTopics.contains(skill)
+                || ProblemSolvingSignals.contains(skill);
+    }
+
+    private double clamp(
+            double value,
+            double min,
+            double max
+    ) {
+
+        if (value < min) {
+            return min;
+        }
+
+        if (value > max) {
+            return max;
+        }
+
+        return value;
     }
 }

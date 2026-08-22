@@ -3,9 +3,8 @@ package com.raunak.backend.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raunak.backend.config.GeminiConfig;
-import com.raunak.backend.dto.AnalysisResult;
+import com.raunak.backend.dto.AiAnalysisResponse;
 import com.raunak.backend.model.QuestionAttempt;
-import com.raunak.backend.model.SkillProfile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -16,9 +15,9 @@ import java.util.Map;
 public class GeminiService {
 
     private final GeminiConfig geminiConfig;
-
     private final ObjectMapper objectMapper;
     private final PromptBuilderService promptBuilderService;
+
     public GeminiService(
             GeminiConfig geminiConfig,
             ObjectMapper objectMapper,
@@ -26,8 +25,10 @@ public class GeminiService {
     ) {
         this.geminiConfig = geminiConfig;
         this.objectMapper = objectMapper;
-        this.promptBuilderService= promptBuilderService;
+        this.promptBuilderService =
+                promptBuilderService;
     }
+
     private WebClient webClient() {
 
         return WebClient.builder()
@@ -37,37 +38,53 @@ public class GeminiService {
                 .build();
     }
 
-    public AnalysisResult analyze(
+    public AiAnalysisResponse analyzeSkillDelta(
             QuestionAttempt attempt
     ) {
+
         String prompt =
                 promptBuilderService
-                        .buildAnalysisPrompt(attempt);
+                        .buildSkillDeltaPrompt(
+                                attempt
+                        );
 
         String geminiText =
-                askGemini(
-                        prompt
-                );
+                askGemini(prompt);
 
         try {
 
             return objectMapper.readValue(
                     geminiText,
-                    AnalysisResult.class
+                    AiAnalysisResponse.class
             );
 
         } catch (Exception e) {
 
             throw new RuntimeException(
+                    "Failed to parse Gemini skill response",
                     e
             );
         }
     }
+
+    public String generateDetailedInsights(
+            QuestionAttempt attempt
+    ) {
+
+        String prompt =
+                promptBuilderService
+                        .buildDetailedInsightsPrompt(
+                                attempt
+                        );
+
+        return askGemini(prompt);
+    }
+
     public String askGemini(
             String prompt
     ) {
 
-        Map<String,Object> body =
+        Map<String, Object> body =
                 Map.of(
                         "contents",
                         List.of(
@@ -95,6 +112,16 @@ public class GeminiService {
                         .bodyToMono(String.class)
                         .block();
 
+        if (
+                response == null
+                        || response.isBlank()
+        ) {
+
+            throw new RuntimeException(
+                    "Empty response from Gemini"
+            );
+        }
+
         try {
 
             JsonNode root =
@@ -102,15 +129,50 @@ public class GeminiService {
                             response
                     );
 
-            String geminiText =
-                    root
-                            .path("candidates")
+            JsonNode candidates =
+                    root.path("candidates");
+
+            if (
+                    !candidates.isArray()
+                            || candidates.isEmpty()
+            ) {
+
+                throw new RuntimeException(
+                        "Gemini returned no candidates"
+                );
+            }
+
+            JsonNode parts =
+                    candidates
                             .get(0)
                             .path("content")
-                            .path("parts")
+                            .path("parts");
+
+            if (
+                    !parts.isArray()
+                            || parts.isEmpty()
+            ) {
+
+                throw new RuntimeException(
+                        "Gemini returned no content"
+                );
+            }
+
+            String geminiText =
+                    parts
                             .get(0)
                             .path("text")
                             .asText();
+
+            if (
+                    geminiText == null
+                            || geminiText.isBlank()
+            ) {
+
+                throw new RuntimeException(
+                        "Gemini returned empty text"
+                );
+            }
 
             return geminiText
                     .replace(
@@ -126,6 +188,7 @@ public class GeminiService {
         } catch (Exception e) {
 
             throw new RuntimeException(
+                    "Failed to parse Gemini response",
                     e
             );
         }

@@ -15,7 +15,8 @@ public class DashboardController {
     public DashboardController(
             DashboardService dashboardService
     ) {
-        this.dashboardService = dashboardService;
+        this.dashboardService =
+                dashboardService;
     }
 
     @GetMapping
@@ -24,7 +25,8 @@ public class DashboardController {
     ) {
 
         AuthUser authUser =
-                (AuthUser) authentication.getPrincipal();
+                (AuthUser)
+                        authentication.getPrincipal();
 
         return dashboardService.getDashboard(
                 authUser.getUserId()

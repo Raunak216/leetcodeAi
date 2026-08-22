@@ -30,15 +30,18 @@ public class QuestionAttempt {
 
     private Integer memory;
 
+    private Integer compileErrors = 0;
+
+    private Integer logicFailures = 0;
+
+    private Boolean accepted = false;
+
     private Boolean analysisCompleted = false;
 
     private Integer analysisRetryCount = 0;
 
     @Column(columnDefinition = "TEXT")
     private String journeyJson;
-
-    @Column(columnDefinition = "TEXT")
-    private String aiResponseJson;
 
     private LocalDateTime createdAt;
 

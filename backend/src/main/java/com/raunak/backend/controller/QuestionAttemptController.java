@@ -1,5 +1,6 @@
 package com.raunak.backend.controller;
 
+import com.raunak.backend.dto.AiInsightsResponse;
 import com.raunak.backend.dto.QuestionAttemptRequest;
 import com.raunak.backend.model.QuestionAttempt;
 import com.raunak.backend.security.AuthUser;
@@ -16,15 +17,22 @@ public class QuestionAttemptController {
 
     private final QuestionAttemptService questionAttemptService;
 
-    public QuestionAttemptController(QuestionAttemptService questionAttemptService) {
-
-        this.questionAttemptService = questionAttemptService;
+    public QuestionAttemptController(
+            QuestionAttemptService questionAttemptService
+    ) {
+        this.questionAttemptService =
+                questionAttemptService;
     }
 
     @PostMapping
-    public QuestionAttempt createAttempt(@Valid @RequestBody QuestionAttemptRequest request) {
-        System.out.println("REACHED ATTEMPTS");
-        return questionAttemptService.saveAttempt(request);
+    public QuestionAttempt createAttempt(
+            @Valid
+            @RequestBody
+            QuestionAttemptRequest request
+    ) {
+
+        return questionAttemptService
+                .saveAttempt(request);
     }
 
     @GetMapping("/me")
@@ -33,24 +41,48 @@ public class QuestionAttemptController {
     ) {
 
         AuthUser authUser =
-                (AuthUser) authentication.getPrincipal();
+                (AuthUser)
+                        authentication.getPrincipal();
 
-        return questionAttemptService.getAttemptsByUser(
-                authUser.getUserId()
-        );
+        return questionAttemptService
+                .getAttemptsByUser(
+                        authUser.getUserId()
+                );
     }
 
     @GetMapping("/{attemptId}")
     public QuestionAttempt getAttempt(
             @PathVariable
-            int attemptId, Authentication authentication
-
+            int attemptId,
+            Authentication authentication
     ) {
+
         AuthUser authUser =
-                (AuthUser) authentication.getPrincipal();
+                (AuthUser)
+                        authentication.getPrincipal();
+
         return questionAttemptService
                 .getAttempt(
-                        attemptId, authUser.getUserId()
+                        attemptId,
+                        authUser.getUserId()
+                );
+    }
+
+    @PostMapping("/{attemptId}/insights")
+    public AiInsightsResponse generateInsights(
+            @PathVariable
+            int attemptId,
+            Authentication authentication
+    ) {
+
+        AuthUser authUser =
+                (AuthUser)
+                        authentication.getPrincipal();
+
+        return questionAttemptService
+                .generateInsights(
+                        attemptId,
+                        authUser.getUserId()
                 );
     }
 }

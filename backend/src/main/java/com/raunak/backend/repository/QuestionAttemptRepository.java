@@ -5,9 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface QuestionAttemptRepository extends JpaRepository<QuestionAttempt,Integer> {
+public interface QuestionAttemptRepository
+        extends JpaRepository<QuestionAttempt, Integer> {
 
-    List<QuestionAttempt> findByUserId(int userId);
+    List<QuestionAttempt> findByUserIdOrderByCreatedAtDesc(
+            int userId
+    );
+
     List<QuestionAttempt>
-    findByAnalysisCompletedFalseAndAnalysisRetryCountLessThan(int maxRetry);
+    findByAnalysisCompletedFalseAndAnalysisRetryCountLessThan(
+            int maxRetry
+    );
 }

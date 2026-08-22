@@ -1,13 +1,14 @@
 package com.raunak.backend.controller;
 
-import com.raunak.backend.model.SkillProfile;
+import com.raunak.backend.model.UserSkill;
 import com.raunak.backend.security.AuthUser;
 import com.raunak.backend.service.SkillProfileService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/skills")
@@ -23,14 +24,15 @@ public class SkillProfileController {
     }
 
     @GetMapping("/me")
-    public SkillProfile getSkills(
+    public List<UserSkill> getSkills(
             Authentication authentication
     ) {
 
         AuthUser authUser =
-                (AuthUser) authentication.getPrincipal();
+                (AuthUser)
+                        authentication.getPrincipal();
 
-        return skillProfileService.getProfile(
+        return skillProfileService.getSkills(
                 authUser.getUserId()
         );
     }

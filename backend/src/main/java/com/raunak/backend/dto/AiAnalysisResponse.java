@@ -1,15 +1,17 @@
 package com.raunak.backend.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class AiAnalysisResponse {
 
-    private String summary;
+    private double score;
 
-    private Map<String,Integer> skillDelta;
+    private List<String> tags;
 }

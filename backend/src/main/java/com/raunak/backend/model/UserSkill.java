@@ -6,26 +6,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"user_id", "skill"}
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
-public class SkillProfile {
+public class UserSkill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(columnDefinition = "TEXT")
-    private String dsa;
+    private String skill;
 
-    @Column(columnDefinition = "TEXT")
-    private String engineering;
+    private double rating = 50.0;
 
-    @Column(columnDefinition = "TEXT")
-    private String reasoning;
+    private int attempts = 0;
 
-    @OneToOne
+    private LocalDateTime lastPracticedAt;
+
+    @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;

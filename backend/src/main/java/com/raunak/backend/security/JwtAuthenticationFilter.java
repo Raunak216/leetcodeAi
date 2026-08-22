@@ -3,6 +3,7 @@ package com.raunak.backend.security;
 import com.raunak.backend.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,7 +11,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 
@@ -19,7 +19,6 @@ public class JwtAuthenticationFilter
         extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
     private final UserRepository userRepository;
 
     public JwtAuthenticationFilter(
@@ -42,56 +41,103 @@ public class JwtAuthenticationFilter
         String header =
                 request.getHeader("Authorization");
 
-        if (
-                header != null &&
-                        header.startsWith("Bearer ")
-        ) {
+        System.out.println(
+                "AUTH REQUEST: " +
+                        request.getMethod() +
+                        " " +
+                        request.getRequestURI()
+        );
 
-            token =
-                    header.substring(7);
+        System.out.println(
+                "AUTH HEADER: " +
+                        header
+        );
 
-        }
+        Cookie[] cookies =
+                request.getCookies();
 
-        if (token == null) {
+        if (cookies != null) {
 
-            Cookie[] cookies =
-                    request.getCookies();
+            for (Cookie cookie : cookies) {
 
-            if (cookies != null) {
+                System.out.println(
+                        "COOKIE: " +
+                                cookie.getName()
+                );
 
-                for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("unSheet")) {
 
-                    if (
-                            cookie.getName().equals("unSheet")
-                    ) {
+                    token = cookie.getValue();
 
-                        token =
-                                cookie.getValue();
+                    System.out.println(
+                            "UNSHEET COOKIE FOUND"
+                    );
 
-                        break;
-                    }
+                    break;
                 }
             }
         }
 
-        if (
-                token != null && jwtService.isValid(token)
-        ) {
-            int userId = jwtService.getUserId(token);
-            if (userRepository.existsById(userId)) {
+        if (token != null) {
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                new AuthUser(userId),
-                                null,
-                                AuthorityUtils.NO_AUTHORITIES
-                        );
+            boolean valid =
+                    jwtService.isValid(token);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println(
+                    "JWT VALID: " +
+                            valid
+            );
+
+            if (valid) {
+
+                int userId =
+                        jwtService.getUserId(token);
+
+                System.out.println(
+                        "JWT USER ID: " +
+                                userId
+                );
+
+                boolean exists =
+                        userRepository.existsById(userId);
+
+                System.out.println(
+                        "USER EXISTS: " +
+                                exists
+                );
+
+                if (exists) {
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    new AuthUser(userId),
+                                    null,
+                                    AuthorityUtils.NO_AUTHORITIES
+                            );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(
+                                    authentication
+                            );
+
+                    System.out.println(
+                            "AUTHENTICATION SET"
+                    );
+                }
             }
         }
 
-        filterChain.doFilter(request, response);
+        System.out.println(
+                "AUTHENTICATED: " +
+                        (SecurityContextHolder
+                                .getContext()
+                                .getAuthentication() != null)
+        );
 
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }

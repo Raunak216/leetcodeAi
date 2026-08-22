@@ -1,26 +1,27 @@
 package com.raunak.backend.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raunak.backend.dto.CompanyRecommendationRequest;
 import com.raunak.backend.dto.GeneralRecommendationRequest;
 import com.raunak.backend.dto.RecommendationResponse;
-import com.raunak.backend.model.QuestionAttempt;
-import com.raunak.backend.model.SkillProfile;
-import com.raunak.backend.repository.QuestionAttemptRepository;
-import com.raunak.backend.repository.SkillProfileRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
-import com.raunak.backend.dto.CompanyRecommendationRequest;
 import com.raunak.backend.model.Company;
 import com.raunak.backend.model.CompanyQuestion;
+import com.raunak.backend.model.QuestionAttempt;
+import com.raunak.backend.model.UserSkill;
 import com.raunak.backend.repository.CompanyQuestionRepository;
 import com.raunak.backend.repository.CompanyRepository;
+import com.raunak.backend.repository.QuestionAttemptRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 @Service
 public class RecommendationService {
 
     private final QuestionAttemptRepository questionAttemptRepository;
-    private final SkillProfileRepository skillProfileRepository;
+    private final SkillProfileService skillProfileService;
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper;
     private final PromptBuilderService promptBuilderService;
@@ -29,20 +30,18 @@ public class RecommendationService {
 
     public RecommendationService(
             QuestionAttemptRepository questionAttemptRepository,
-            SkillProfileRepository skillProfileRepository,
+            SkillProfileService skillProfileService,
             GeminiService geminiService,
             ObjectMapper objectMapper,
             PromptBuilderService promptBuilderService,
             CompanyRepository companyRepository,
             CompanyQuestionRepository companyQuestionRepository
-    )
-    {
-
+    ) {
         this.questionAttemptRepository =
                 questionAttemptRepository;
 
-        this.skillProfileRepository =
-                skillProfileRepository;
+        this.skillProfileService =
+                skillProfileService;
 
         this.geminiService =
                 geminiService;
@@ -59,94 +58,72 @@ public class RecommendationService {
         this.companyQuestionRepository =
                 companyQuestionRepository;
     }
-    public RecommendationResponse
-    getGeneralRecommendations(
+
+    public RecommendationResponse getGeneralRecommendations(
             int userId,
             GeneralRecommendationRequest request
     ) {
 
         try {
 
-            SkillProfile profile =
-                    skillProfileRepository
-                            .findByUserId(
-                                    userId
-                            )
-                            .orElseThrow();
+            List<UserSkill> skills =
+                    skillProfileService.getSkills(
+                            userId
+                    );
 
             List<QuestionAttempt> attempts =
                     questionAttemptRepository
-                            .findByUserId(
+                            .findByUserIdOrderByCreatedAtDesc(
                                     userId
                             );
 
             List<String> solvedQuestions =
-                    attempts.stream()
-                            .map(
-                                    QuestionAttempt::getTitle
-                            )
-                            .toList();
+                    getSolvedQuestions(
+                            attempts
+                    );
 
             String prompt =
                     promptBuilderService
                             .buildRecommendationPrompt(
-
-                                    profile,
-
+                                    skills,
                                     solvedQuestions,
-
                                     request.isInterviewScheduled(),
-
                                     request.getDaysRemaining()
                             );
 
-            System.out.println(prompt);
-            String geminiResponse =
-                    geminiService
-                            .askGemini(
-                                    prompt
-                            );
-
-            return objectMapper
-                    .readValue(
-                            geminiResponse,
-                            RecommendationResponse.class
+            String response =
+                    geminiService.askGemini(
+                            prompt
                     );
+
+            return objectMapper.readValue(
+                    response,
+                    RecommendationResponse.class
+            );
 
         } catch (Exception e) {
 
-            throw new RuntimeException(
-                    e
-            );
+            throw new RuntimeException(e);
         }
     }
 
-    public RecommendationResponse
-    getCompanyRecommendations(
+    public RecommendationResponse getCompanyRecommendations(
             int userId,
-
             CompanyRecommendationRequest request
-    )
-    {
+    ) {
 
         try {
 
-            SkillProfile profile =
-                    skillProfileRepository
-                            .findByUserId(
-                                    userId                            )
-                            .orElseThrow();
+            List<UserSkill> skills =
+                    skillProfileService.getSkills(
+                            userId
+                    );
 
-            List<String> solvedQuestions =
+            List<QuestionAttempt> attempts =
                     questionAttemptRepository
-                            .findByUserId(
+                            .findByUserIdOrderByCreatedAtDesc(
                                     userId
-                            )
-                            .stream()
-                            .map(
-                                    QuestionAttempt::getTitle
-                            )
-                            .toList();
+                            );
 
             Company company =
                     companyRepository
@@ -156,23 +133,49 @@ public class RecommendationService {
                             .orElseThrow();
 
             List<String> companyQuestions =
-                    companyQuestionRepository
-                            .findByCompanyId(
-                                    company.getId()
-                            )
-                            .stream()
-                            .map(
-                                    CompanyQuestion::getTitle
-                            )
-                            .distinct()
-                            .toList();
+                    new ArrayList<>(
+                            companyQuestionRepository
+                                    .findByCompanyId(
+                                            company.getId()
+                                    )
+                                    .stream()
+                                    .map(
+                                            CompanyQuestion::getTitle
+                                    )
+                                    .distinct()
+                                    .toList()
+                    );
+
+            List<String> solvedQuestions =
+                    getSolvedQuestions(
+                            attempts
+                    );
+
+            List<String> solvedCompanyQuestions =
+                    new ArrayList<>();
+
+            for (String question :
+                    solvedQuestions) {
+
+                if (
+                        companyQuestions.contains(
+                                question
+                        )
+                ) {
+
+                    solvedCompanyQuestions.add(
+                            question
+                    );
+                }
+            }
+
+            Collections.shuffle(
+                    companyQuestions
+            );
+
             if (
                     companyQuestions.size() > 200
             ) {
-
-                Collections.shuffle(
-                        companyQuestions
-                );
 
                 companyQuestions =
                         companyQuestions.subList(
@@ -180,42 +183,55 @@ public class RecommendationService {
                                 200
                         );
             }
-            companyQuestions =
-                    companyQuestions.subList(
-                            0,
-                            Math.min(
-                                    200,
-                                    companyQuestions.size()
-                            )
-                    );
 
             String prompt =
                     promptBuilderService
                             .buildCompanyRecommendationPrompt(
-                                    profile,
-                                    solvedQuestions,
+                                    skills,
+                                    solvedCompanyQuestions,
                                     companyQuestions,
                                     request.getCompany(),
                                     request.getDaysRemaining()
                             );
 
-            String geminiResponse =
-                    geminiService
-                            .askGemini(
-                                    prompt
-                            );
-
-            return objectMapper
-                    .readValue(
-                            geminiResponse,
-                            RecommendationResponse.class
+            String response =
+                    geminiService.askGemini(
+                            prompt
                     );
+
+            return objectMapper.readValue(
+                    response,
+                    RecommendationResponse.class
+            );
 
         } catch (Exception e) {
 
-            throw new RuntimeException(
-                    e
-            );
+            throw new RuntimeException(e);
         }
+    }
+
+    private List<String> getSolvedQuestions(
+            List<QuestionAttempt> attempts
+    ) {
+
+        List<String> solvedQuestions =
+                new ArrayList<>();
+
+        for (QuestionAttempt attempt :
+                attempts) {
+
+            if (
+                    !solvedQuestions.contains(
+                            attempt.getTitle()
+                    )
+            ) {
+
+                solvedQuestions.add(
+                        attempt.getTitle()
+                );
+            }
+        }
+
+        return solvedQuestions;
     }
 }
