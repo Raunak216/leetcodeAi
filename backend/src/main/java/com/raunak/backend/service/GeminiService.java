@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raunak.backend.config.GeminiConfig;
 import com.raunak.backend.dto.AiAnalysisResponse;
+import com.raunak.backend.dto.AiInsightsResponse;
 import com.raunak.backend.model.QuestionAttempt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,12 +26,10 @@ public class GeminiService {
     ) {
         this.geminiConfig = geminiConfig;
         this.objectMapper = objectMapper;
-        this.promptBuilderService =
-                promptBuilderService;
+        this.promptBuilderService = promptBuilderService;
     }
 
     private WebClient webClient() {
-
         return WebClient.builder()
                 .baseUrl(
                         "https://generativelanguage.googleapis.com"
@@ -44,9 +43,7 @@ public class GeminiService {
 
         String prompt =
                 promptBuilderService
-                        .buildSkillDeltaPrompt(
-                                attempt
-                        );
+                        .buildSkillDeltaPrompt(attempt);
 
         String geminiText =
                 askGemini(prompt);
@@ -61,7 +58,7 @@ public class GeminiService {
         } catch (Exception e) {
 
             throw new RuntimeException(
-                    "Failed to parse Gemini skill response",
+                    "Failed to parse Gemini skill delta response",
                     e
             );
         }
@@ -125,9 +122,7 @@ public class GeminiService {
         try {
 
             JsonNode root =
-                    objectMapper.readTree(
-                            response
-                    );
+                    objectMapper.readTree(response);
 
             JsonNode candidates =
                     root.path("candidates");
@@ -142,24 +137,11 @@ public class GeminiService {
                 );
             }
 
-            JsonNode parts =
+            String geminiText =
                     candidates
                             .get(0)
                             .path("content")
-                            .path("parts");
-
-            if (
-                    !parts.isArray()
-                            || parts.isEmpty()
-            ) {
-
-                throw new RuntimeException(
-                        "Gemini returned no content"
-                );
-            }
-
-            String geminiText =
-                    parts
+                            .path("parts")
                             .get(0)
                             .path("text")
                             .asText();

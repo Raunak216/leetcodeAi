@@ -6,8 +6,12 @@ import {
   RefreshCw,
   Settings2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+
+import { useEffect, useState } from "react";
+
 import { getCompanies } from "@/services/company";
+
+import { SavedRecommendation } from "@/types/Recommendation";
 
 interface RecommendationPanelProps {
   onGenerate: (data: {
@@ -16,30 +20,57 @@ interface RecommendationPanelProps {
     interviewScheduled: boolean;
     daysRemaining: number | null;
   }) => void;
+
   disabled?: boolean;
+
+  hasRecommendation?: boolean;
+
+  savedPrep?: Omit<SavedRecommendation, "recommendation"> | null;
 }
 
 export default function RecommendationPanel({
   onGenerate,
   disabled = false,
+  hasRecommendation = false,
+  savedPrep = null,
 }: RecommendationPanelProps) {
   const [mode, setMode] = useState<"general" | "company">("general");
-  const [companies, setCompanies] = useState([]);
+
+  const [companies, setCompanies] = useState<any[]>([]);
+
   const [interviewScheduled, setInterviewScheduled] = useState(false);
+
   const [daysRemaining, setDaysRemaining] = useState("");
+
   const [company, setCompany] = useState("");
+
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
-    const savedRecommendation = localStorage.getItem("unsheet_recommendation");
-
-    if (savedRecommendation) {
-      setIsMinimized(true);
-    }
-  }, []);
-  useEffect(() => {
     getCompanies().then(setCompanies);
   }, []);
+
+  // Restore the preparation context after refresh.
+  useEffect(() => {
+    if (!savedPrep) {
+      return;
+    }
+
+    setMode(savedPrep.mode);
+    setCompany(savedPrep.company);
+    setInterviewScheduled(savedPrep.interviewScheduled);
+
+    setDaysRemaining(
+      savedPrep.daysRemaining !== null ? String(savedPrep.daysRemaining) : "",
+    );
+  }, [savedPrep]);
+
+  // Keep the panel minimized whenever a recommendation exists.
+  useEffect(() => {
+    if (hasRecommendation) {
+      setIsMinimized(true);
+    }
+  }, [hasRecommendation]);
 
   const handleGenerate = () => {
     onGenerate({
@@ -49,16 +80,13 @@ export default function RecommendationPanel({
       daysRemaining:
         mode === "company" || interviewScheduled ? Number(daysRemaining) : null,
     });
+
     setIsMinimized(true);
   };
 
-  // -------------------------------------------------------------
-  // Minimized Compact Bar View
-  // -------------------------------------------------------------
   if (isMinimized) {
     return (
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#0B0D11] bg-white/[0.02] p-4 transition-all">
-        {/* Left Side: Change Prep Button & Current Strategy Badge */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMinimized(false)}
@@ -68,16 +96,19 @@ export default function RecommendationPanel({
             Change Prep
           </button>
 
-          <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] px-3.5 py-2 text-xs font-medium text-white/60 border border-white/5">
+          <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.03] px-3.5 py-2 text-xs font-medium text-white/60">
             {mode === "general" ? (
               <>
                 <Brain size={14} className="text-cyan-400" />
+
                 <span>General Prep Roadmap</span>
               </>
             ) : (
               <>
                 <Building2 size={14} className="text-cyan-400" />
+
                 <span>{company || "Company Target"}</span>
+
                 {daysRemaining && (
                   <span className="ml-1 text-white/40">
                     ({daysRemaining}d left)
@@ -88,7 +119,6 @@ export default function RecommendationPanel({
           </div>
         </div>
 
-        {/* Right Side: Get Next Set of Questions Button */}
         <button
           disabled={disabled}
           onClick={handleGenerate}
@@ -101,9 +131,6 @@ export default function RecommendationPanel({
     );
   }
 
-  // -------------------------------------------------------------
-  // Expanded Full Selection Panel
-  // -------------------------------------------------------------
   return (
     <div className="mb-8 rounded-3xl bg-[#0B0D11] bg-white/[0.02] p-7 transition-all">
       <p className="mb-6 text-xs uppercase tracking-[0.3em] text-white/25">
@@ -120,7 +147,9 @@ export default function RecommendationPanel({
           }`}
         >
           <Brain className="mb-5 text-cyan-400" />
+
           <h3 className="text-xl font-semibold">General Prep</h3>
+
           <p className="mt-2 text-white/35">
             Personalized roadmap from all your attempts.
           </p>
@@ -135,7 +164,9 @@ export default function RecommendationPanel({
           }`}
         >
           <Building2 className="mb-5 text-white/40" />
+
           <h3 className="text-xl font-semibold">Company Prep</h3>
+
           <p className="mt-2 text-white/35">
             Target a specific company's interview pool.
           </p>
@@ -147,9 +178,10 @@ export default function RecommendationPanel({
           <select
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="flex-1 rounded-xl border border-white/10 bg-[#0B0D11] px-4 py-3 outline-none text-white"
+            className="flex-1 rounded-xl border border-white/10 bg-[#0B0D11] px-4 py-3 text-white outline-none"
           >
             <option value="">Select Company</option>
+
             {companies.map((comp: any) => (
               <option key={comp.id} value={comp.name}>
                 {comp.name}
@@ -164,12 +196,13 @@ export default function RecommendationPanel({
               size={18}
               className="absolute left-4 top-4 text-white/35"
             />
+
             <input
               type="number"
               value={daysRemaining}
               onChange={(e) => setDaysRemaining(e.target.value)}
               placeholder="Days Remaining"
-              className="w-full rounded-xl border border-white/10 bg-transparent py-3 pl-11 pr-4 outline-none placeholder:text-white/20 text-white"
+              className="w-full rounded-xl border border-white/10 bg-transparent py-3 pl-11 pr-4 text-white outline-none placeholder:text-white/20"
             />
           </div>
         )}

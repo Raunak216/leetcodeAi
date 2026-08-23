@@ -118,50 +118,80 @@ public class PromptBuilderService {
     ) {
 
         return """
-                Provide a detailed coaching analysis of this coding attempt.
+                You are a DSA interview coach reviewing a user's
+                complete coding journey.
                 
-                Question:
+                Your goal is to help the user become better at solving
+                DSA problems independently.
+                
+                QUESTION:
                 %s
                 
-                Difficulty:
+                DIFFICULTY:
                 %s
                 
-                Language:
+                LANGUAGE:
                 %s
                 
-                Thinking Journey:
+                COMPLETE CODING JOURNEY:
                 %s
                 
-                Analyze the complete reasoning journey.
+                Give a concise but useful review of how the user solved
+                this problem.
                 
-                Cover:
+                Structure the response into exactly these sections:
                 
-                1. Initial approach.
+                What went well
+                <1-2 concise sentences>
                 
-                2. How the approach evolved.
+                Where you struggled
+                <1-2 concise sentences>
                 
-                3. Important mistakes or wrong turns.
+                How to improve
+                <2-3 concise sentences with concrete advice>
                 
-                4. What was done well.
+                Pattern to remember
+                <1-2 concise sentences describing the reusable DSA idea>
                 
-                5. Why failed attempts failed.
+                Next step
+                <1 concise sentence suggesting what to practice next>
                 
-                6. How the final approach works.
+                IMPORTANT RULES:
                 
-                7. Time complexity.
+                1. Keep the entire response around 8-12 lines.
                 
-                8. Space complexity.
+                2. Use short paragraphs with clear spacing between sections.
                 
-                9. Missed edge cases.
+                3. Do NOT explain the entire problem solution.
                 
-                10. Improvements to the reasoning process.
+                4. Do NOT reproduce the user's code.
                 
-                11. The important pattern or concept to remember.
+                5. Do NOT describe every run individually.
                 
-                Be specific to this attempt.
-                Do not give generic motivational advice.
-                Do not invent events that are not present in the
-                thinking journey.
+                6. Focus on the user's actual solving behaviour visible
+                   in the journey.
+                
+                7. Mention meaningful issues such as:
+                   - wrong approach
+                   - implementation mistakes
+                   - compile errors
+                   - wrong answers
+                   - debugging
+                   - edge cases
+                   - unnecessary complexity
+                   - good algorithmic decisions
+                
+                8. Give concrete DSA advice rather than generic advice.
+                
+                9. Do not mention numerical skill ratings.
+                
+                10. Do not mention internal mastery scores.
+                
+                11. Do not use JSON.
+                
+                12. Do not use markdown code blocks.
+                
+                Return only the final coaching review.
                 """.formatted(
                 attempt.getTitle(),
                 attempt.getDifficulty(),
