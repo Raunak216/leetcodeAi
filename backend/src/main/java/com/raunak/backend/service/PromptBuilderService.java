@@ -226,7 +226,7 @@ public class PromptBuilderService {
     ) {
 
         return """
-                Create a high ROI interview preparation plan.
+                Create a high-ROI interview preparation plan for the user.
                 
                 COMPANY:
                 %s
@@ -237,30 +237,75 @@ public class PromptBuilderService {
                 CURRENT SKILL PROFILE:
                 %s
                 
-                COMPANY QUESTIONS ALREADY SOLVED:
+                QUESTIONS ALREADY SOLVED FROM THIS COMPANY:
                 %s
                 
-                AVAILABLE COMPANY QUESTIONS:
+                COMPANY QUESTION BANK:
                 %s
                 
-                Recommend the best questions from the available
-                company question list.
+                Your task is to recommend the most valuable questions
+                for this user's remaining preparation time.
                 
-                Prioritize questions that match the user's weak
-                or under-practiced skills and are likely to provide
-                strong interview preparation value.
+                You may recommend:
+                - Questions directly from the company question bank.
+                - Similar questions that test the same important pattern.
+                - Questions that are not in the company question bank if they
+                  provide better preparation for the user's weaknesses.
                 
-                Do not recommend questions already solved.
+                Do not recommend questions already solved by the user.
                 
-                Return ONLY valid JSON in this format:
+                Prioritize high ROI questions based on:
+                - Weak or under-practiced skills.
+                - Important DSA patterns for the company.
+                - Variety of patterns rather than repetitive questions.
+                - The number of days remaining.
+                - Interview usefulness.
+                
+                Return ONLY valid JSON in this exact format:
                 
                 {
-                  "recommendedQuestions": [
-                    "Question Name 1",
-                    "Question Name 2"
-                  ],
-                  "reasoning": "Short explanation"
+                  "questions": [
+                    {
+                      "title": "Question title",
+                      "slug": "leetcode-question-slug",
+                      "difficulty": "Easy",
+                      "topics": ["arrays", "hashing"],
+                      "reason": "Good practice for hash-based lookup patterns.",
+                      "estimatedTime": "20 min"
+                    }
+                  ]
                 }
+                
+                Rules:
+                
+                1. Return only questions that are appropriate for interview
+                   preparation.
+                
+                2. Only return 6 question at a time on run.
+                
+                3. Keep the reason short. Explain why this question is useful
+                   for the user in one sentence.
+                
+                4. Do not mention numerical skill ratings, mastery scores,
+                   or internal profile values in the reason.
+                
+                5. Do not say things such as "your skill is 52" or
+                   "your score is low".
+                
+                6. Topics must use the provided DSA skill names when applicable.
+                
+                7. Difficulty must be exactly one of:
+                   Easy, Medium, Hard.
+                
+                8. estimatedTime should be a simple estimate such as
+                   "15 min", "25 min", or "40 min".
+                
+                9. Return the actual LeetCode slug when recommending
+                   a LeetCode problem.
+                
+                10. Do not return explanations outside the JSON.
+                
+                Return only JSON.
                 """.formatted(
                 company,
                 daysRemaining,
@@ -269,6 +314,7 @@ public class PromptBuilderService {
                 String.join(", ", companyQuestions)
         );
     }
+
 
     private String buildSkillProfileText(
             List<UserSkill> skills

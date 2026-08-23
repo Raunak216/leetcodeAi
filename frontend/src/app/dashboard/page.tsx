@@ -17,6 +17,8 @@ import {
 
 import { RecommendationResponse } from "@/types/Recommendation";
 
+const STORAGE_KEY = "unsheet_recommendation";
+
 export default function DashboardPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "generated">(
     "idle",
@@ -24,35 +26,58 @@ export default function DashboardPage() {
 
   const [recommendation, setRecommendation] =
     useState<RecommendationResponse | null>(null);
+
+  useEffect(() => {
+    const savedRecommendation = localStorage.getItem(STORAGE_KEY);
+
+    if (savedRecommendation) {
+      try {
+        const parsed = JSON.parse(savedRecommendation);
+
+        if (parsed && Array.isArray(parsed.questions)) {
+          setRecommendation(parsed);
+          setStatus("generated");
+        }
+      } catch (error) {
+        console.error("Failed to load saved recommendation:", error);
+
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
+
   const handleGenerate = async (data: any) => {
     setStatus("loading");
 
     try {
+      let result: RecommendationResponse;
+
       if (data.mode === "general") {
-        const result = await generateGeneralRecommendation({
+        result = await generateGeneralRecommendation({
           interviewScheduled: data.interviewScheduled,
 
           daysRemaining: data.daysRemaining,
         });
-
-        setRecommendation(result);
       } else {
-        const result = await generateCompanyRecommendation({
+        result = await generateCompanyRecommendation({
           company: data.company,
 
           daysRemaining: data.daysRemaining,
         });
-
-        setRecommendation(result);
       }
 
-      setStatus("generated");
-    } catch (e) {
-      console.error(e);
+      setRecommendation(result);
 
-      setStatus("idle");
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+
+      setStatus("generated");
+    } catch (error) {
+      console.error(error);
+
+      setStatus(recommendation ? "generated" : "idle");
     }
   };
+
   return (
     <AuthGuard>
       <main className="flex min-h-screen bg-[#050608] text-white">

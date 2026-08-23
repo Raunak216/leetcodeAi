@@ -31,6 +31,13 @@ export default function RecommendationPanel({
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
+    const savedRecommendation = localStorage.getItem("unsheet_recommendation");
+
+    if (savedRecommendation) {
+      setIsMinimized(true);
+    }
+  }, []);
+  useEffect(() => {
     getCompanies().then(setCompanies);
   }, []);
 
